@@ -19,7 +19,7 @@ html, body { height: 100%; }
 .brand::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
 .top .spacer { flex: 1; }
 .hub { color: var(--accent); text-decoration: none; font-weight: 500; font-size: var(--fs-sm); padding: var(--space-2); }
-.view { flex: 1; min-height: 0; overflow-y: auto; padding-block: var(--space-2) var(--space-6); display: grid; gap: var(--space-5); align-content: start; }
+.view { flex: 1; min-height: 0; overflow-y: auto; padding-block: var(--space-2) var(--space-6); display: grid; grid-auto-rows: max-content; gap: var(--space-5); align-content: start; } /* tracks keep their content height when the view scrolls */
 .session { display: flex; flex-direction: column; gap: var(--space-4); }
 .session-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
 .session .segmented { justify-self: center; }
