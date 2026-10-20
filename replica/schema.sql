@@ -64,19 +64,22 @@ alter table public.attempts enable row level security;
 create policy "owner manages own profile" on public.til_profile for all to authenticated
   using ((select auth.uid()) = user_id and (select public.is_hub_owner()))
   with check ((select auth.uid()) = user_id and (select public.is_hub_owner()));
--- Review history is written once and never edited; deletes come only from the word's cascade.
+-- Review history is never edited; it is deleted with its word, or within 10 minutes by undo.
 create policy "owner reads own reviews" on public.review_log for select to authenticated
   using ((select auth.uid()) = user_id and (select public.is_hub_owner()));
 create policy "owner logs own reviews" on public.review_log for insert to authenticated
   with check ((select auth.uid()) = user_id and (select public.is_hub_owner())
               and exists (select 1 from public.items i where i.id = word_id and i.user_id = (select auth.uid())));
+-- Undo: the last answer can be taken back for 10 minutes; older history stays fixed.
+create policy "owner undoes a recent review" on public.review_log for delete to authenticated
+  using ((select auth.uid()) = user_id and (select public.is_hub_owner()) and reviewed_at > now() - interval '10 minutes');
 create policy "owner manages own attempts" on public.attempts for all to authenticated
   using ((select auth.uid()) = user_id and (select public.is_hub_owner()))
   with check ((select auth.uid()) = user_id and (select public.is_hub_owner()));
 
 revoke all on public.til_profile, public.review_log, public.attempts from anon;
 grant select, insert, update, delete on public.til_profile, public.attempts to authenticated;
-grant select, insert on public.review_log to authenticated;
+grant select, insert, delete on public.review_log to authenticated;
 
 -- Per-day activity in the user's own time zone: daily goal, day circles, streaks, stats periods.
 -- security invoker, so the caller's row level security applies.

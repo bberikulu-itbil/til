@@ -6,309 +6,515 @@
 <title>Тіл</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Golos+Text:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Golos+Text:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="ui.css">
 <style>
-/* Layout: one-screen app like Life Hub; the review card is the centre, the dictionary a searchable list. Same tokens as the Hub, accent = the Til app's blue. */
-:root {
-  --bg: #f1f3f6; --surface: #ffffff; --ink: #121821; --muted: #5a6574; --line: #dce1e8;
-  --accent: #3461d9; --on-accent: #ffffff; --danger: #c23b36; --good: #1d8a55; --warn: #b2740a;
-  --font-display: "Geologica", "Golos Text", system-ui, sans-serif;
-  --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d1116; --surface: #161b22; --ink: #e5e9ef; --muted: #96a1af; --line: #272e38;
-    --accent: #6f95ff; --on-accent: #0b1430; --danger: #ff7a73; --good: #45c486; --warn: #e3a63c;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0d1116; --surface: #161b22; --ink: #e5e9ef; --muted: #96a1af; --line: #272e38;
-  --accent: #6f95ff; --on-accent: #0b1430; --danger: #ff7a73; --good: #45c486; --warn: #e3a63c;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
+/* App shell only: one-screen layout, header on top, tab bar at the bottom. Components live in ui.css. */
 html, body { height: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font-body); -webkit-text-size-adjust: 100%; }
-button, input { font: inherit; color: inherit; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-h1, h2 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
-
-.app { height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; }
-.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.top { flex: none; display: flex; align-items: center; gap: 12px; padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
-.brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.app { height: 100%; max-width: var(--max-width); margin: 0 auto; display: flex; flex-direction: column; }
+.gutter { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
+.top { flex: none; min-height: var(--header); display: flex; align-items: center; gap: var(--space-3); padding-top: env(safe-area-inset-top, 0px); }
+.brand { font: 600 var(--fs-lg)/var(--lh-lg) var(--font-display); display: flex; align-items: center; gap: var(--space-2); }
 .brand::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
-.stats { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.hub { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; }
-.view { flex: 1; min-height: 0; overflow-y: auto; padding-block: 8px 20px; }
-
-.btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 600; background: var(--accent); color: var(--on-accent); }
-.btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
-.btn:disabled { opacity: .5; cursor: default; }
-input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
-input:focus { border-color: var(--accent); outline: none; }
-label { font-size: 13px; font-weight: 500; color: var(--muted); }
-.msg-line { min-height: 1.5em; margin: 0; font-size: 14px; color: var(--muted); }
-.icon-btn { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--accent); }
-
-.login { display: grid; align-content: center; gap: 16px; }
-.form { display: grid; gap: 10px; max-width: 380px; }
-
-/* Review */
-.review { display: flex; flex-direction: column; gap: 16px; }
-.progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
-.progress i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 20px; display: grid; gap: 14px; justify-items: center; text-align: center; min-height: 300px; align-content: center; }
-.word { font-family: var(--font-display); font-size: clamp(28px, 8vw, 40px); line-height: 1.15; overflow-wrap: anywhere; }
-.box-label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.answer { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; width: 100%; }
-.translation { font-size: 22px; font-weight: 600; overflow-wrap: anywhere; }
-.example { color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
-.grades { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.grades button { border-radius: 14px; padding: 12px 6px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; display: grid; gap: 2px; }
-.grades small { font-weight: 400; font-size: 12px; color: var(--muted); }
-.g0 { color: var(--danger); } .g1 { color: var(--warn); } .g2 { color: var(--good); }
-.done { text-align: center; display: grid; gap: 10px; justify-items: center; padding-top: 40px; }
-.done p { margin: 0; color: var(--muted); max-width: 40ch; }
-
-/* Dictionary */
-.add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.top .spacer { flex: 1; }
+.hub { color: var(--accent); text-decoration: none; font-weight: 500; font-size: var(--fs-sm); padding: var(--space-2); }
+.view { flex: 1; min-height: 0; overflow-y: auto; padding-block: var(--space-2) var(--space-6); display: grid; gap: var(--space-5); align-content: start; }
+.session { display: flex; flex-direction: column; gap: var(--space-4); }
+.session-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.session .segmented { justify-self: center; }
+.session .deck { flex: none; }
+.flash .answer b { font-size: var(--fs-lg); }
+.streak-chip { color: var(--warning); }
+.stub { display: grid; gap: var(--space-3); }
+.word-list li { grid-template-columns: minmax(0, 1fr) auto auto; cursor: default; }
+.add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: var(--space-2); align-items: end; }
 @media (max-width: 520px) { .add { grid-template-columns: 1fr; } }
-.add div { display: grid; gap: 4px; min-width: 0; }
-.list { list-style: none; margin: 8px 0 0; padding: 0; }
-.list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
-.list b { font-weight: 600; overflow-wrap: anywhere; }
-.list span { display: block; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
-.dots { display: flex; gap: 3px; } .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); } .dots i.on { background: var(--accent); }
-.del { background: none; border: 1px solid transparent; border-radius: 8px; color: var(--muted); padding: 2px 8px; font-size: 13px; }
-.del.armed { border-color: var(--danger); color: var(--danger); }
-.note { color: var(--muted); padding: 16px 0; }
-.search { margin-top: 16px; }
-
-.tabs { flex: none; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); background: var(--surface); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.tabs button { background: none; border: 0; padding: 12px 4px 13px; font-size: 14px; font-weight: 500; color: var(--muted); }
-.tabs button[aria-current="page"] { color: var(--ink); box-shadow: inset 0 2px 0 var(--accent); }
-@media (prefers-reduced-motion: reduce) { .progress i { transition: none; } }
+.dots { display: flex; gap: 3px; } .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); } .dots i.on { background: var(--accent); }
+.small-input { max-width: 120px; }
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="spk" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <defs>
+    <symbol id="i-speaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="7" rx="2"/><rect x="13" y="4" width="8" height="7" rx="2"/><rect x="3" y="13" width="8" height="7" rx="2"/><rect x="13" y="13" width="8" height="7" rx="2"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-2"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-cards" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="13" height="16" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h9"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z"/></symbol>
+  </defs>
 </svg>
+
 <div class="app">
   <header class="top gutter">
-    <div class="brand">Тіл</div>
-    <span id="stats" class="stats"></span>
+    <span class="brand">Тіл</span>
+    <span class="spacer"></span>
+    <span id="streak-chip" class="chip streak-chip" hidden><svg width="16" height="16" aria-hidden="true"><use href="#i-flame"/></svg><span id="streak-chip-n"></span></span>
     <a class="hub" href="../life-hub/">Hub</a>
   </header>
 
-  <main id="login" class="view login gutter" hidden>
-    <h1>Тіл</h1>
-    <p class="msg-line">Life Hub аккаунтыңмен кір.</p>
-    <form id="login-form" class="form">
-      <label for="email">Email</label>
-      <input id="email" type="email" autocomplete="email" required>
-      <label for="password">Құпиясөз</label>
-      <input id="password" type="password" autocomplete="current-password" required>
+  <!-- Login: same account as Life Hub -->
+  <main id="login" class="view gutter" hidden>
+    <h1 class="t-xl">Тіл</h1>
+    <p class="muted">Life Hub аккаунтыңмен кір.</p>
+    <form id="login-form" class="stack" style="max-width:380px">
+      <div class="field"><label for="email">Email</label><input id="email" class="input" type="email" autocomplete="email" required></div>
+      <div class="field"><label for="password">Құпиясөз</label><input id="password" class="input" type="password" autocomplete="current-password" required></div>
       <button id="login-btn" class="btn" type="submit">Кіру</button>
-      <p id="login-msg" class="msg-line" role="status"></p>
+      <p id="login-msg" class="t-sm muted" role="status"></p>
     </form>
   </main>
 
-  <main id="review" class="view review gutter" hidden>
-    <div class="progress" aria-hidden="true"><i id="bar" style="width:0"></i></div>
-    <div id="card" class="card">
-      <span id="box" class="box-label"></span>
-      <div id="word" class="word" lang="en"></div>
-      <button id="say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#spk"/></svg></button>
-      <div id="answer" class="answer" hidden>
-        <div id="translation" class="translation"></div>
-        <div id="example" class="example" lang="en"></div>
+  <!-- S04 Today -->
+  <main id="today" class="view gutter" hidden>
+    <div id="today-loading" class="stack" aria-label="Жүктеліп жатыр"><div class="skeleton" style="height:180px"></div><div class="skeleton" style="height:48px"></div><div class="skeleton" style="height:90px"></div></div>
+    <div id="today-body" class="stack" hidden>
+      <div id="no-words" class="card empty" hidden>
+        <h2 class="t-lg">Сөздік әзірге бос</h2>
+        <p>Бастапқы жинақты қос: емтиханға керек 20 жиі сөз. Кейін өз сөздеріңді Сөздер бөлімінен немесе Hub ассистенті арқылы қосасың.</p>
+        <button id="add-starter" class="btn" type="button">20 сөзді қосу</button>
       </div>
-      <button id="reveal" class="btn" type="button">Аудармасын көрсету</button>
-    </div>
-    <div id="grades" class="grades" hidden>
-      <button class="g0" type="button" data-grade="0">Білмедім<small>10 мин</small></button>
-      <button class="g1" type="button" data-grade="1">Қиын<small id="g1"></small></button>
-      <button class="g2" type="button" data-grade="2">Білдім<small id="g2"></small></button>
-    </div>
-    <div id="done" class="done" hidden>
-      <h2>Бүгінге бәрі қайталанды</h2>
-      <p id="done-text"></p>
-      <button id="to-dict" class="btn ghost" type="button">Сөздікке жаңа сөз қосу</button>
+      <div id="queues" class="list">
+        <button id="go-new" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-plus"/></svg></span><span>Жаңа сөздер<small id="new-line"></small></span><span id="new-badge" class="badge"></span></button>
+        <button id="go-review" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-undo"/></svg></span><span>Қайталау<small id="review-line"></small></span><span id="review-badge" class="badge"></span></button>
+        <button id="go-mixed" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-grid"/></svg></span><span>Аралас<small>Жаңа сөздер мен қайталау бірге</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      </div>
+      <section class="card stack" aria-labelledby="week-h">
+        <h2 id="week-h" class="eyebrow">Осы апта</h2>
+        <div id="days" class="days"></div>
+        <div class="tiles">
+          <div class="tile"><span class="t-sm muted">Қазіргі streak</span><b id="cur-streak">0</b></div>
+          <div class="tile"><span class="t-sm muted">Ең ұзақ streak</span><b id="best-streak">0</b></div>
+        </div>
+        <p id="today-line" class="t-sm muted"></p>
+      </section>
     </div>
   </main>
 
-  <main id="dict" class="view gutter" hidden>
+  <!-- S05 Card session -->
+  <main id="session" class="view gutter session" hidden>
+    <div class="session-head">
+      <button id="back" class="icon-btn" type="button" aria-label="Бүгін бетіне оралу"><svg width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <div class="segmented" role="tablist" aria-label="Кезек">
+        <button id="tab-new" role="tab" type="button" aria-selected="true">Жаңа</button>
+        <button id="tab-review" role="tab" type="button" aria-selected="false">Қайталау <span id="tab-review-n" class="badge"></span></button>
+      </div>
+      <button id="undo" class="icon-btn" type="button" aria-label="Соңғы жауапты қайтару" disabled><svg width="20" height="20" aria-hidden="true"><use href="#i-undo"/></svg></button>
+    </div>
+    <div id="progress" class="segments" aria-hidden="true"></div>
+    <p id="progress-text" class="t-sm muted" role="status"></p>
+
+    <div id="card-area" class="stack">
+      <div class="deck">
+        <article id="flash" class="flash">
+          <span class="label again" aria-hidden="true">Тағы</span><span class="label know" aria-hidden="true">Білемін</span>
+          <span id="eyebrow" class="eyebrow"></span>
+          <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+            <span id="prompt" class="prompt" lang="en"></span>
+            <button id="say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></button>
+          </div>
+          <div class="helpers" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+            <button id="h-reveal" type="button" aria-pressed="false"><svg width="22" height="22" aria-hidden="true"><use href="#i-eye"/></svg>Аудармасын көрсету</button>
+            <button id="h-choose" type="button" aria-pressed="false"><svg width="22" height="22" aria-hidden="true"><use href="#i-grid"/></svg>Нұсқадан таңдау</button>
+          </div>
+          <div id="choices" class="choices" hidden></div>
+          <div id="answer" class="answer" hidden><b id="translation"></b><span id="example" class="muted" lang="en"></span></div>
+        </article>
+      </div>
+      <div class="grade">
+        <button id="again" class="btn again secondary" type="button">← Тағы көрсет</button>
+        <button id="know" class="btn know" type="button">Білемін →</button>
+      </div>
+      <p class="t-xs muted" style="text-align:center">Оңға сырғытсаң: білемін. Солға: тағы көрсет.</p>
+    </div>
+
+    <div id="session-done" class="card empty" hidden>
+      <h2 id="done-title" class="t-lg"></h2>
+      <p id="done-text"></p>
+      <div class="row" style="justify-content:center">
+        <button id="done-more" class="btn secondary" type="button" hidden>Тағы 5 жаңа сөз</button>
+        <button id="done-switch" class="btn secondary" type="button" hidden></button>
+        <button id="done-home" class="btn" type="button">Бүгін бетіне</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- S08 Words (v1: own words + starter pack; categories come in milestone 2) -->
+  <main id="words" class="view gutter" hidden>
+    <h1 class="t-xl">Сөздер</h1>
     <form id="add" class="add">
-      <div><label for="new-word">Ағылшынша сөз</label><input id="new-word" lang="en" autocomplete="off" required></div>
-      <div><label for="new-tr">Аудармасы (бос қалса, ЖИ толтырады)</label><input id="new-tr" autocomplete="off"></div>
+      <div class="field"><label for="new-word">Ағылшынша сөз</label><input id="new-word" class="input" lang="en" autocomplete="off" required></div>
+      <div class="field"><label for="new-tr">Аудармасы (бос қалса, ЖИ толтырады)</label><input id="new-tr" class="input" autocomplete="off"></div>
       <button id="add-btn" class="btn" type="submit">Қосу</button>
     </form>
-    <p id="add-msg" class="msg-line" role="status"></p>
-    <input id="search" class="search" type="search" placeholder="Іздеу…" aria-label="Сөздіктен іздеу">
-    <ul id="list" class="list"></ul>
+    <input id="search" class="input" type="search" placeholder="Іздеу…" aria-label="Сөздіктен іздеу">
+    <ul id="word-list" class="list word-list" style="list-style:none;margin:0;padding:0"></ul>
   </main>
 
-  <nav id="tabs" class="tabs" hidden>
-    <button type="button" data-view="review">Қайталау</button>
-    <button type="button" data-view="dict">Сөздік</button>
+  <main id="practice" class="view gutter" hidden>
+    <h1 class="t-xl">Жаттығу</h1>
+    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Writing Task 2: таймер, сөз санағы және ЖИ-дің band бағасы. Сосын Speaking бөлімдері мен тьютор.</p></div>
+  </main>
+
+  <main id="progress-view" class="view gutter" hidden>
+    <h1 class="t-xl">Прогресс</h1>
+    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Апта, ай, 3 ай бойынша статистика, деңгей A1–C2 және дағдылар бойынша band. Streak қазір Бүгін бетінде.</p></div>
+  </main>
+
+  <main id="profile" class="view gutter" hidden>
+    <h1 class="t-xl">Профиль</h1>
+    <form id="goal-form" class="card stack">
+      <div class="field"><label for="goal">Күніне жаңа сөз</label><input id="goal" class="input small-input" type="number" min="1" max="50" inputmode="numeric" required></div>
+      <button class="btn secondary" type="submit" style="justify-self:start">Сақтау</button>
+    </form>
+    <div class="card stack">
+      <p id="who" class="muted"></p>
+      <button id="logout" class="btn secondary" type="button" style="justify-self:start">Шығу</button>
+    </div>
+  </main>
+
+  <nav id="tabbar" class="tabbar" aria-label="Негізгі мәзір" hidden>
+    <button type="button" data-view="today"><svg width="22" height="22" aria-hidden="true"><use href="#i-cards"/></svg>Бүгін</button>
+    <button type="button" data-view="words"><svg width="22" height="22" aria-hidden="true"><use href="#i-book"/></svg>Сөздер</button>
+    <button type="button" data-view="practice"><svg width="22" height="22" aria-hidden="true"><use href="#i-pen"/></svg>Жаттығу</button>
+    <button type="button" data-view="progress-view"><svg width="22" height="22" aria-hidden="true"><use href="#i-chart"/></svg>Прогресс</button>
+    <button type="button" data-view="profile"><svg width="22" height="22" aria-hidden="true"><use href="#i-user"/></svg>Профиль</button>
   </nav>
 </div>
+<div id="toast" class="toast" role="status" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
-import { review, queue, INTERVALS, LEARNED_BOX } from "./srs.js";
+import { review, queue } from "./srs.js";
+import { attachSwipe, fly } from "./swipe.js";
+import { dayKey, addDays, streaks, weekOf } from "./stats.js";
 
 // Same Supabase project as Life Hub; both sites live on bberikulu-itbil.github.io, so the sign-in is shared.
 const sb = supabase.createClient("https://lcmnkcpkbkrktediyvpo.supabase.co", "sb_publishable_Z0BZxemzhkUPo_lfgxMAbA_9TkVXL2q");
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-const BOXES = ["жаңа", "1 күн", "3 күн", "1 апта", "2 апта", "1 ай", "3 ай"];
-const days = (n) => (n === 0 ? "10 мин" : n < 7 ? `${n} күн` : n < 30 ? `${n / 7} апта` : `${n / 30} ай`);
+const DAY_NAMES = ["Дс", "Сс", "Ср", "Бс", "Жм", "Сб", "Жс"];
 
-let words = [], todo = [], pos = 0, view = "review";
+let profile = null, words = [], daily = [], view = "today";
+let session = null; // { kind, todo, pos, history }
+let busy = false, extraNew = 0;
 
-/* ---------- speech ---------- */
+/* ---------- small helpers ---------- */
+let toastTimer;
+function toast(text, error) {
+  const t = $("toast");
+  t.textContent = text; t.className = "toast" + (error ? " error" : ""); t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2800);
+}
 function speak(text) {
   if (!text || !("speechSynthesis" in window)) return;
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith("en-US")) || speechSynthesis.getVoices().find((v) => v.lang.startsWith("en")) || null;
-  u.rate = 0.9;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
+  const voices = speechSynthesis.getVoices();
+  u.voice = voices.find((v) => v.lang.startsWith("en-US")) || voices.find((v) => v.lang.startsWith("en")) || null;
+  u.lang = "en-US"; u.rate = 0.9;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+const tz = () => profile?.time_zone || "Asia/Qostanay";
+const today = () => dayKey(new Date(), tz());
+const todayRow = () => daily.find((d) => d.day === today()) || { reviews: 0, new_words: 0 };
+
+/* ---------- data ---------- */
+async function loadProfile() {
+  let { data, error } = await sb.from("til_profile").select("*").maybeSingle();
+  if (!error && !data) ({ data, error } = await sb.from("til_profile").insert({}).select().single());
+  if (error) throw error;
+  profile = data;
+}
+async function loadWords() {
+  // shortcut: loads the whole dictionary (≤ 2000 words) into memory; page it when it grows past that.
+  const { data, error } = await sb.from("items").select("id, data, created_at").eq("app", "lang").order("created_at", { ascending: false }).limit(2000);
+  if (error) throw error;
+  words = data;
+}
+async function loadDaily() {
+  const { data, error } = await sb.rpc("til_daily", { p_since: addDays(today(), -400) });
+  if (error) throw error;
+  daily = data.map((d) => ({ ...d, day: String(d.day).slice(0, 10) }));
+}
+async function loadAll() {
+  $("today-loading").hidden = false; $("today-body").hidden = true;
+  try {
+    await loadProfile();
+    await Promise.all([loadWords(), loadDaily()]);
+  } catch (e) {
+    $("today-loading").hidden = true;
+    toast("Деректер жүктелмеді: " + e.message, true);
+    return false;
+  }
+  return true;
+}
+
+/* ---------- queues ---------- */
+const now = () => Date.now();
+const newLeft = () => Math.max((profile?.daily_new_words ?? 7) + extraNew - todayRow().new_words, 0);
+const dueWords = () => queue(words, now(), 0);
+const freshWords = () => queue(words.filter((w) => !w.data.srs), now(), newLeft());
+function buildQueue(kind) {
+  const list = kind === "new" ? freshWords() : kind === "review" ? dueWords() : queue(words, now(), newLeft());
+  return list.map((w) => ({ w, queue: w.data.srs ? "review" : "new" }));
 }
 
 /* ---------- views ---------- */
 function show(next) {
   view = next;
-  for (const v of ["login", "review", "dict"]) $(v).hidden = v !== next;
-  $("tabs").hidden = next === "login";
-  for (const b of $("tabs").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
-  if (next === "review") startReview();
-  if (next === "dict") renderList();
+  for (const v of ["login", "today", "session", "words", "practice", "progress-view", "profile"]) $(v).hidden = v !== next;
+  $("tabbar").hidden = next === "login" || next === "session";
+  for (const b of $("tabbar").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
+  if (next === "today" && profile) renderToday(); // before the first load the skeleton stays
+  if (next === "words") renderWords();
+  if (next === "profile") { $("goal").value = profile?.daily_new_words ?? 7; }
 }
-for (const b of $("tabs").children) b.onclick = () => show(b.dataset.view);
-$("to-dict").onclick = () => show("dict");
+for (const b of $("tabbar").children) b.onclick = () => show(b.dataset.view);
 
-async function load() {
-  const { data, error } = await sb.from("items").select("id, data, created_at").eq("app", "lang").order("created_at", { ascending: false }).limit(2000);
-  if (error) { $("stats").textContent = "Жүктелмеді"; return; }
-  words = data;
-  const learned = words.filter((w) => (w.data.srs?.box ?? 0) >= LEARNED_BOX).length;
-  $("stats").textContent = `${words.length} сөз · ${learned} үйренілді`;
-}
+/* ---------- S04 today ---------- */
+function renderToday() {
+  $("today-loading").hidden = true; $("today-body").hidden = false;
+  const goal = (profile?.daily_new_words ?? 7) + extraNew, learned = todayRow().new_words;
+  const fresh = words.filter((w) => !w.data.srs).length, due = dueWords().length;
+  $("no-words").hidden = words.length > 0;
+  $("queues").hidden = words.length === 0;
+  $("new-line").textContent = `Бүгін ${Math.min(learned, goal)} / ${goal}` + (fresh ? "" : " · жаңа сөз қалмады");
+  $("new-badge").textContent = Math.min(newLeft(), fresh); $("new-badge").hidden = !Math.min(newLeft(), fresh);
+  $("review-line").textContent = due ? `Қазір қайталайтын ${due} сөз` : "Қазір қайталайтын сөз жоқ";
+  $("review-badge").textContent = due; $("review-badge").hidden = !due;
 
-/* ---------- review ---------- */
-function startReview() {
-  todo = queue(words);
-  pos = 0;
-  showCard();
+  const active = daily.filter((d) => d.reviews > 0).map((d) => d.day);
+  const { current, best } = streaks(active, today());
+  const set = new Set(active);
+  $("days").replaceChildren(...weekOf(today()).map((d, i) => {
+    const s = el("span", "day" + (set.has(d) ? " done" : "") + (d === today() ? " today" : ""));
+    const b = el("b", "", DAY_NAMES[i]);
+    s.setAttribute("aria-label", `${DAY_NAMES[i]}: ${set.has(d) ? "оқыдың" : d > today() ? "әлі алда" : "оқылмады"}`);
+    s.append(b);
+    return s;
+  }));
+  $("cur-streak").textContent = `${current} күн`;
+  $("best-streak").textContent = `${best} күн`;
+  $("streak-chip").hidden = !current; $("streak-chip-n").textContent = current;
+  $("streak-chip").setAttribute("aria-label", `Streak: ${current} күн`);
+  const r = todayRow().reviews;
+  $("today-line").textContent = r ? `Бүгін ${r} рет жауап бердің.` : current ? "Бүгін әлі оқымадың: streak-ті сақтау үшін бір карточка жеткілікті." : "Бір карточкадан бастасаң, streak басталады.";
 }
-function showCard() {
-  const w = todo[pos];
-  $("bar").style.width = todo.length ? `${(pos / todo.length) * 100}%` : "100%";
-  $("card").hidden = !w;
-  $("done").hidden = !!w;
-  $("grades").hidden = true;
-  if (!w) {
-    $("done-text").textContent = words.length
-      ? "Келесі сөздер уақыты келгенде осында шығады. Hub ассистентіне «… сөзін сөздікке қос» деп жазсаң да болады."
-      : "Сөздік әзірге бос. Сөздік бөлімінен қос немесе Hub ассистентіне «serendipity сөзін сөздікке қос» деп жаз.";
-    return;
+$("add-starter").onclick = async () => {
+  $("add-starter").setAttribute("aria-busy", "true");
+  try {
+    const pack = await (await fetch("packs/b1-starter.json")).json();
+    const { data, error } = await sb.rpc("til_add_pack", { p_category: pack.category, p_words: pack.words });
+    if (error) throw error;
+    toast(`${data} сөз қосылды.`);
+    await loadWords(); renderToday();
+  } catch (e) { toast("Жинақ қосылмады: " + e.message, true); }
+  $("add-starter").removeAttribute("aria-busy");
+};
+$("go-new").onclick = () => startSession("new");
+$("go-review").onclick = () => startSession("review");
+$("go-mixed").onclick = () => startSession("mixed");
+
+/* ---------- S05 session ---------- */
+function startSession(kind) {
+  session = { kind, todo: buildQueue(kind), pos: 0, history: [], goalAtStart: todayRow().new_words };
+  $("tab-new").setAttribute("aria-selected", String(kind === "new"));
+  $("tab-review").setAttribute("aria-selected", String(kind === "review"));
+  $("undo").disabled = true;
+  show("session");
+  renderCard();
+}
+$("tab-new").onclick = () => startSession("new");
+$("tab-review").onclick = () => startSession("review");
+$("back").onclick = () => show("today");
+
+function renderProgress() {
+  const s = session, total = s.todo.length;
+  if (s.kind === "new") {
+    const goal = (profile?.daily_new_words ?? 7) + extraNew, learned = Math.min(todayRow().new_words, goal);
+    $("progress").replaceChildren(...Array.from({ length: goal }, (_, i) => el("i", i < learned ? "on" : "")));
+    $("progress-text").textContent = `Бүгін үйренілді: ${learned} / ${goal}`;
+  } else {
+    $("progress").replaceChildren(...Array.from({ length: Math.min(total, 30) }, (_, i) => el("i", i < Math.round((s.pos / Math.max(total, 1)) * Math.min(total, 30)) ? "on" : "")));
+    $("progress-text").textContent = `${Math.min(s.pos, total)} / ${total}`;
   }
-  const box = w.data.srs?.box ?? 0;
-  $("box").textContent = `${pos + 1} / ${todo.length} · ${w.data.srs ? "қайталау" : "жаңа сөз"}`;
-  $("word").textContent = w.data.word;
-  $("translation").textContent = w.data.translation || "—";
-  $("example").textContent = w.data.example || "";
-  $("answer").hidden = true;
-  $("reveal").hidden = false;
-  $("g1").textContent = days(INTERVALS[Math.max(box, 1)]);
-  $("g2").textContent = days(INTERVALS[Math.min(box + 1, INTERVALS.length - 1)]);
+  const due = dueWords().length;
+  $("tab-review-n").textContent = due; $("tab-review-n").hidden = !due;
 }
-$("say").onclick = () => speak(todo[pos]?.data.word);
-$("reveal").onclick = () => {
-  $("answer").hidden = false;
-  $("reveal").hidden = true;
-  $("grades").hidden = false;
-  if (todo[pos]?.data.example) $("example").onclick = () => speak(todo[pos].data.example);
+function renderCard() {
+  const s = session, entry = s.todo[s.pos];
+  renderProgress();
+  $("card-area").hidden = !entry;
+  $("session-done").hidden = !!entry;
+  if (!entry) return renderDone();
+  const d = entry.w.data;
+  $("eyebrow").textContent = [entry.queue === "new" ? "Жаңа сөз" : "Қайталау", d.level, d.category].filter(Boolean).join(" · ");
+  $("prompt").textContent = d.word;
+  $("translation").textContent = d.translation || "—";
+  $("example").textContent = d.example || "";
+  $("answer").hidden = true; $("choices").hidden = true;
+  $("h-reveal").setAttribute("aria-pressed", "false"); $("h-choose").setAttribute("aria-pressed", "false");
+  $("h-choose").hidden = words.length < 3;
+  entry.mode = "recognition";
+}
+function renderDone() {
+  const s = session, due = dueWords().length, fresh = words.filter((w) => !w.data.srs).length;
+  $("done-more").hidden = !(s.kind === "new" && fresh > 0);
+  if (s.kind === "new") {
+    $("done-title").textContent = fresh ? "Бүгінгі жаңа сөздер бітті" : "Жаңа сөз қалмады";
+    $("done-text").textContent = fresh ? "Мақсат орындалды. Қаласаң, тағы бірнеше сөз алуға болады." : "Сөздер бөлімінен жаңа сөз қос немесе Hub ассистентіне жаз.";
+  } else {
+    $("done-title").textContent = "Қайталау бітті";
+    $("done-text").textContent = "Келесі сөздер уақыты келгенде осында шығады.";
+  }
+  const other = s.kind === "new" ? (due ? "review" : null) : (newLeft() && fresh ? "new" : null);
+  $("done-switch").hidden = !other;
+  $("done-switch").textContent = other === "review" ? `Қайталауға өту (${due})` : "Жаңа сөздерге өту";
+  $("done-switch").onclick = () => startSession(other);
+}
+$("done-more").onclick = () => { extraNew += 5; startSession("new"); };
+$("done-home").onclick = () => show("today");
+$("say").onclick = () => speak(session?.todo[session.pos]?.w.data.word);
+$("h-reveal").onclick = () => {
+  $("answer").hidden = false; $("h-reveal").setAttribute("aria-pressed", "true");
+  speak(session.todo[session.pos].w.data.word);
 };
-for (const b of $("grades").children) b.onclick = async () => {
-  const w = todo[pos];
-  const grade = Number(b.dataset.grade);
-  const data = { ...w.data, srs: review(w.data.srs, grade) };
-  const { error } = await sb.from("items").update({ data }).eq("id", w.id);
-  if (error) { $("box").textContent = "Сақталмады: " + error.message; return; }
-  w.data = data;
-  if (grade === 0) todo.push(w); // forgotten words come back at the end of this session
-  pos++;
-  showCard();
-  load();
+$("h-choose").onclick = () => {
+  const entry = session.todo[session.pos], right = entry.w.data.translation;
+  const others = [...new Set(words.map((w) => w.data.translation).filter((t) => t && t !== right))].sort(() => Math.random() - 0.5).slice(0, 2);
+  const options = [right, ...others].sort(() => Math.random() - 0.5);
+  entry.mode = "choice";
+  $("h-choose").setAttribute("aria-pressed", "true");
+  $("choices").hidden = false;
+  $("choices").replaceChildren(...options.map((o) => {
+    const b = el("button", "", o); b.type = "button";
+    b.onclick = () => {
+      for (const c of $("choices").children) c.disabled = true;
+      b.classList.add(o === right ? "right" : "wrong");
+      if (o !== right) [...$("choices").children].find((c) => c.textContent === right)?.classList.add("right");
+      $("answer").hidden = false;
+    };
+    return b;
+  }));
 };
 
-/* ---------- dictionary ---------- */
-function renderList() {
+async function answer(dir) {
+  const s = session, entry = s.todo[s.pos];
+  if (!entry || busy) return;
+  busy = true;
+  const grade = dir === "right" ? 2 : 0, w = entry.w, prev = w.data;
+  const srs = review(prev.srs, grade);
+  const data = { ...prev, srs };
+  const { error } = await sb.from("items").update({ data }).eq("id", w.id);
+  let logId = null;
+  if (!error) {
+    const res = await sb.from("review_log").insert({ word_id: w.id, grade, queue: entry.queue, mode: entry.mode, box_after: srs.box }).select("id").single();
+    if (res.error) await sb.from("items").update({ data: prev }).eq("id", w.id); // keep card and log in step
+    else logId = res.data.id;
+  }
+  busy = false;
+  if (!logId) { toast("Сақталмады, қайта көр: " + (error?.message || "байланыс қатесі"), true); renderCard(); return; }
+  w.data = data;
+  bump(entry.queue, grade, +1);
+  s.history.push({ entry, prev, logId, pos: s.pos, requeued: grade === 0 });
+  if (grade === 0) s.todo.push({ w, queue: entry.queue }); // forgotten words come back in this session
+  s.pos++;
+  $("undo").disabled = false;
+  renderCard();
+}
+// Keeps today's counters right without a reload.
+function bump(queueName, grade, sign) {
+  let row = daily.find((d) => d.day === today());
+  if (!row) { row = { day: today(), reviews: 0, new_words: 0, knew: 0 }; daily.push(row); }
+  row.reviews += sign;
+  if (queueName === "new" && grade > 0) row.new_words += sign;
+  if (grade === 2) row.knew += sign;
+}
+$("undo").onclick = async () => {
+  const s = session, last = s.history.at(-1);
+  if (!last || busy) return;
+  busy = true;
+  const { error } = await sb.from("review_log").delete().eq("id", last.logId);
+  const res = error ? { error } : await sb.from("items").update({ data: last.prev }).eq("id", last.entry.w.id);
+  busy = false;
+  if (res.error) return toast("Қайтарылмады: " + res.error.message, true);
+  s.history.pop();
+  last.entry.w.data = last.prev;
+  if (last.requeued) s.todo.splice(s.todo.lastIndexOf(s.todo.findLast((e) => e.w === last.entry.w)), 1);
+  bump(last.entry.queue, Number(!last.requeued) * 2, -1);
+  s.pos = last.pos;
+  $("undo").disabled = !s.history.length;
+  renderCard();
+};
+attachSwipe($("flash"), answer);
+$("know").onclick = () => !busy && session.todo[session.pos] && fly($("flash"), "right", () => answer("right"));
+$("again").onclick = () => !busy && session.todo[session.pos] && fly($("flash"), "left", () => answer("left"));
+document.addEventListener("keydown", (e) => {
+  if (view !== "session" || e.target.closest("input, textarea")) return;
+  if (e.key === "ArrowRight") $("know").click();
+  if (e.key === "ArrowLeft") $("again").click();
+  if (e.key === " " && !$("card-area").hidden) { e.preventDefault(); $("h-reveal").click(); }
+});
+
+/* ---------- S08 words ---------- */
+function renderWords() {
   const q = $("search").value.trim().toLowerCase();
   const shown = q ? words.filter((w) => `${w.data.word} ${w.data.translation}`.toLowerCase().includes(q)) : words;
-  if (!shown.length) return $("list").replaceChildren(el("li", "note", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос."));
-  $("list").replaceChildren(...shown.map((w) => {
-    const li = el("li");
-    const text = el("div");
-    text.append(el("b", "", w.data.word), el("span", "", w.data.translation || ""));
-    const dots = el("div", "dots");
-    dots.title = "Қайталау кезеңі: " + BOXES[w.data.srs?.box ?? 0];
-    for (let i = 1; i < INTERVALS.length; i++) dots.append(el("i", i <= (w.data.srs?.box ?? 0) ? "on" : ""));
-    const say = el("button", "icon-btn");
-    say.type = "button";
-    say.setAttribute("aria-label", "Айтылуын тыңдау");
-    say.innerHTML = '<svg width="18" height="18" aria-hidden="true"><use href="#spk"/></svg>';
+  if (!shown.length) return $("word-list").replaceChildren(el("li", "empty", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос немесе Бүгін бетінен бастапқы жинақты ал."));
+  $("word-list").replaceChildren(...shown.map((w) => {
+    const li = el("li", "list-row");
+    const text = el("span"); text.append(el("span", "", w.data.word), el("small", "", w.data.translation || ""));
+    const dots = el("span", "dots"); dots.setAttribute("aria-label", `Кезең ${w.data.srs?.box ?? 0} / 6`);
+    for (let i = 1; i <= 6; i++) dots.append(el("i", i <= (w.data.srs?.box ?? 0) ? "on" : ""));
+    const say = el("button", "icon-btn"); say.type = "button"; say.setAttribute("aria-label", `${w.data.word}: тыңдау`);
+    say.innerHTML = '<svg width="18" height="18" aria-hidden="true"><use href="#i-speaker"/></svg>';
     say.onclick = () => speak(w.data.word);
-    const del = el("button", "del", "Жою");
-    del.type = "button";
-    del.onclick = async () => {
-      if (!del.classList.contains("armed")) {
-        del.classList.add("armed"); del.textContent = "Иә, жою";
-        setTimeout(() => { del.classList.remove("armed"); del.textContent = "Жою"; }, 3000);
-        return;
-      }
-      const { error } = await sb.from("items").delete().eq("id", w.id);
-      if (!error) { words = words.filter((x) => x !== w); renderList(); load(); }
-    };
-    li.append(text, dots, say, del);
+    li.append(text, dots, say);
     return li;
   }));
 }
-$("search").oninput = renderList;
+$("search").oninput = renderWords;
 $("add").onsubmit = async (e) => {
   e.preventDefault();
   const word = $("new-word").value.trim(), translation = $("new-tr").value.trim();
   if (!word) return;
-  $("add-btn").disabled = true;
-  $("add-msg").textContent = translation ? "Сақталып жатыр…" : "ЖИ аударма мен мысал іздеп жатыр…";
+  $("add-btn").setAttribute("aria-busy", "true"); $("add-btn").disabled = true;
   let error;
   if (translation) {
-    ({ error } = await sb.from("items").insert({ app: "lang", data: { word, translation } }));
+    ({ error } = await sb.from("items").insert({ app: "lang", data: { word, translation, source: "manual" } }));
   } else {
     // The Hub assistant translates and saves; it reads the Hub's model list from this shared site storage.
     let models = [];
     try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
     const res = await sb.functions.invoke("assistant", { body: { messages: [{ role: "user", content: `"${word}" сөзін сөздікке қос` }], models } });
     error = res.error || (res.data?.actions?.some((a) => a.tool === "add_word" && a.ok) ? null : { message: res.data?.reply || "ЖИ сөзді сақтамады" });
-    if (res.error) { try { error = { message: (await res.error.context.json()).error }; } catch { /* keep the original */ } }
+    if (res.error) { try { error = { message: (await res.error.context.json()).error }; } catch { /* keep it */ } }
   }
-  $("add-btn").disabled = false;
-  if (error) return ($("add-msg").textContent = "Қосылмады: " + error.message);
-  $("add-msg").textContent = `«${word}» қосылды.`;
+  $("add-btn").removeAttribute("aria-busy"); $("add-btn").disabled = false;
+  if (error) return toast("Қосылмады: " + error.message, true);
+  toast(`«${word}» қосылды.`);
   $("new-word").value = ""; $("new-tr").value = "";
-  await load();
-  renderList();
+  await loadWords(); renderWords();
 };
+
+/* ---------- profile ---------- */
+$("goal-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const n = Math.round(Number($("goal").value));
+  if (!(n >= 1 && n <= 50)) return toast("1 мен 50 аралығындағы сан жаз.", true);
+  const { data, error } = await sb.from("til_profile").update({ daily_new_words: n }).eq("user_id", profile.user_id).select().single();
+  if (error) return toast("Сақталмады: " + error.message, true);
+  profile = data; toast(`Күнделікті мақсат: ${n} жаңа сөз.`);
+};
+$("logout").onclick = () => sb.auth.signOut();
 
 /* ---------- auth ---------- */
 $("login-form").onsubmit = async (e) => {
@@ -318,11 +524,13 @@ $("login-form").onsubmit = async (e) => {
   $("login-btn").disabled = false;
   $("login-msg").textContent = error ? (error.message === "Invalid login credentials" ? "Email немесе құпиясөз қате." : error.message) : "";
 };
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return; // keep the review session where it is
-  if (!session) return show("login");
+sb.auth.onAuthStateChange((event, session_) => {
+  if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return; // keep a card session where it is
+  if (!session_) return show("login");
+  $("who").textContent = session_.user.email;
   // supabase-js asks not to await its own calls inside this callback, so load right after it.
-  setTimeout(async () => { await load(); show(view === "login" ? "review" : view); });
+  show(view === "login" || view === "session" ? "today" : view);
+  setTimeout(async () => { if (await loadAll()) show(view); });
 });
 </script>
 </body>

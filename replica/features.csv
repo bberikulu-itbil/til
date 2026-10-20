@@ -1,27 +1,27 @@
 feature,area,priority,original,clone,notes
-Swipe flashcard: know / don't know,vocab,must,Reword,partial,Til v0.1 has three buttons (Білмедім/Қиын/Білдім); add swipe gesture + undo
-Undo last swipe,vocab,should,Reword 4.1,no,keep last review state in memory and restore it
+Swipe flashcard: know / don't know,vocab,must,Reword,yes,"S05: drag right = know, left = again; buttons + arrow keys as fallback"
+Undo last swipe,vocab,should,Reword 4.1,yes,S05: restores the card state and deletes the log row (10-minute window in RLS)
 Spaced repetition scheduling,vocab,must,Reword + GoPrep,yes,srs.js Leitner boxes
 Recall direction: EN->KZ / KZ->EN / both / random,vocab,must,Reword 4.0,no,translation shown in Kazakh (user's first language)
 Review modes: recognition / production (type the word) / mixed,vocab,should,GoPrep,no,production = type the English word
-Word categories (built-in packs),vocab,must,Reword,no,own word packs by level (A1-C1) and topic; never copy Reword's lists
+Word categories (built-in packs),vocab,must,Reword,partial,one starter pack (20 own B1/B2 words) via til_add_pack; category browsing in M2
 Custom words,vocab,must,Reword,yes,Til v0.1 add form + Hub assistant
 Custom categories,vocab,should,Reword,no,tag field on lang items
 Example sentences,vocab,must,Reword,yes,AI fills example when adding
-AI-generated cards from a topic or text,vocab,should,GoPrep,no,"assistant: 'IELTS environment сөздерінен 10 карточка жаса'"
+AI-generated cards from a topic or text,vocab,should,GoPrep,no,assistant: 'IELTS environment сөздерінен 10 карточка жаса'
 Pronunciation audio,vocab,must,both (implied),yes,browser speechSynthesis en-US
 Hands-free mode (auto-play cards with audio),vocab,could,Reword,no,speak word -> pause -> speak translation -> next
 Free daily limit,business,skip,Reword,skip,personal app: no paywall
 Statistics: week / month / 3 months / year,progress,should,Reword,no,needs a review log table
-Streak + study reminders,progress,should,GoPrep 1.1,no,"web push on iPhone needs the site added to Home Screen; start with streak only"
+Streak + study reminders,progress,should,GoPrep 1.1,no,web push on iPhone needs the site added to Home Screen; start with streak only
 Exam countdown + target band,plan,should,GoPrep,no,profile fields
-Personalized daily plan (weakest skill first),plan,should,GoPrep,no,"rule-based first: due cards + one writing or speaking task"
+Personalized daily plan (weakest skill first),plan,should,GoPrep,no,rule-based first: due cards + one writing or speaking task
 Writing Task 2 with timer,writing,must,GoPrep,no,40 min timer + word count
 Writing Task 1 with timer,writing,could,GoPrep,no,needs chart images: generate own charts
 AI writing feedback: 4 criteria + band estimate,writing,must,GoPrep,no,"model via Hub assistant function, structured JSON output"
 AI grammar corrections + vocabulary suggestions,writing,must,GoPrep,no,same call as band feedback
 Speaking Part 1 / 2 (cue card) / 3,speaking,must,GoPrep,no,own question bank
-Speaking feedback: fluency / pace / pauses / filler words,speaking,should,GoPrep,no,"pace + pauses + fillers from speech-recognition transcript and timings; pronunciation needs audio model"
+Speaking feedback: fluency / pace / pauses / filler words,speaking,should,GoPrep,no,pace + pauses + fillers from speech-recognition transcript and timings; pronunciation needs audio model
 Live voice tutor (hands-free / push-to-talk),speaking,could,GoPrep,no,browser STT + TTS loop; quality depends on device
 Speaking session review,speaking,should,GoPrep,no,transcript + feedback saved
 Reading mock tests (14 question types),reading,could,GoPrep,no,needs own passages: large content job
@@ -33,13 +33,13 @@ Offline mode,platform,could,Reword,no,service worker on GitHub Pages
 Score guarantee / refund promise,business,skip,GoPrep,skip,commercial promise not a feature
 Original content: word lists / passages / audio / mock tests,content,skip,both,skip,owned by the developers; write our own
 Brand names (Reword / GoPrep / IELTS.GG / Preppy),brand,skip,both,skip,use own names; IELTS only descriptively ('IELTS-style')
-Daily new-word goal (e.g. 7) with progress segments,vocab,must,Reword S04/S05,no,profile.daily_new_words
-Separate new-words and review queues + mixed mode,vocab,must,Reword S04,partial,queue() mixes them; add tabs
-Card helpers: type it / reveal / choose from options,vocab,should,Reword S05,partial,reveal exists; add typing and 4-option choice
+Daily new-word goal (e.g. 7) with progress segments,vocab,must,Reword S04/S05,yes,"til_profile.daily_new_words, editable in Profile; +5 more after the goal"
+Separate new-words and review queues + mixed mode,vocab,must,Reword S04,yes,S04 rows + S05 tabs
+Card helpers: type it / reveal / choose from options,vocab,should,Reword S05,partial,reveal + 3-option choice done; typing comes with review modes (M2)
 Browse mode that does not affect stats,vocab,could,Reword S04,no,
 Import a word list,vocab,could,Reword S08,no,paste lines 'word - translation'
 Word photos on cards,vocab,skip,Reword S05,skip,licensed photos; maybe emoji or none
-Current and best streak + week day circles,progress,must,both,no,from review_log
+Current and best streak + week day circles,progress,must,both,yes,til_daily in Asia/Qostanay days; header chip
 Level A1-C2 (current -> next),progress,should,GoPrep S16,no,set by user or a level check
 Insights unlocked by a level check (weakest skill / typical mistakes / forecast),progress,could,GoPrep S15,no,needs attempts data
 Mode switch: Spoken English / IELTS prep,plan,should,GoPrep S17,no,changes home and plan

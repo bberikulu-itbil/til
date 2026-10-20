@@ -1,0 +1,26 @@
+{
+  "category": "B1: бастапқы жинақ",
+  "note": "Our own starter pack: common B1 words for IELTS-style writing and speaking. Translations and examples written for Тіл.",
+  "words": [
+    { "word": "achieve", "translation": "қол жеткізу", "example": "She worked hard to achieve her goals.", "level": "B1" },
+    { "word": "improve", "translation": "жақсарту", "example": "Reading every day will improve your vocabulary.", "level": "B1" },
+    { "word": "opinion", "translation": "пікір", "example": "In my opinion, the plan is too expensive.", "level": "B1" },
+    { "word": "environment", "translation": "қоршаған орта", "example": "Plastic waste harms the environment.", "level": "B1" },
+    { "word": "advantage", "translation": "артықшылық", "example": "Living near school is a big advantage.", "level": "B1" },
+    { "word": "challenge", "translation": "қиындық, сынақ", "example": "Learning a new language is a real challenge.", "level": "B1" },
+    { "word": "increase", "translation": "өсу, арттыру", "example": "Prices usually increase in winter.", "level": "B1" },
+    { "word": "decrease", "translation": "азаю, азайту", "example": "The number of visitors decreased last year.", "level": "B1" },
+    { "word": "solution", "translation": "шешім", "example": "We need a quick solution to this problem.", "level": "B1" },
+    { "word": "consider", "translation": "қарастыру, ойланып көру", "example": "Consider all the options before you decide.", "level": "B1" },
+    { "word": "require", "translation": "талап ету", "example": "This job requires good English.", "level": "B1" },
+    { "word": "benefit", "translation": "пайда", "example": "Regular exercise has many benefits.", "level": "B1" },
+    { "word": "affect", "translation": "әсер ету", "example": "Lack of sleep affects your memory.", "level": "B1" },
+    { "word": "reliable", "translation": "сенімді", "example": "I need a reliable laptop for work.", "level": "B1" },
+    { "word": "issue", "translation": "мәселе", "example": "Traffic is a serious issue in big cities.", "level": "B1" },
+    { "word": "approach", "translation": "тәсіл", "example": "Let's try a different approach.", "level": "B2" },
+    { "word": "efficient", "translation": "тиімді", "example": "The new bus route is faster and more efficient.", "level": "B2" },
+    { "word": "evidence", "translation": "дәлел", "example": "There is no evidence that the story is true.", "level": "B2" },
+    { "word": "crucial", "translation": "өте маңызды, шешуші", "example": "Sleep is crucial for learning.", "level": "B2" },
+    { "word": "generation", "translation": "ұрпақ", "example": "The younger generation uses phones for almost everything.", "level": "B1" }
+  ]
+}
