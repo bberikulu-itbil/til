@@ -1,139 +1,134 @@
 # Recon map: Reword + GoPrep → Тіл
 
-Clean-room recon from public App Store listings. Nothing here is copied from either app: no word lists, passages, audio, text, names or images. We rebuild what the apps *do*, in our own words and content.
+Clean-room recon from the public App Store listings and the user's own screenshots of both apps (his own accounts, 2026-10-20). Nothing here is copied from either app: no word lists, passages, audio, photos, mascots, text or names. We rebuild what the apps *do*, in our own words and content.
 
 ## 1. Scope
 
-| question | answer (proposed) |
+| question | answer |
 | --- | --- |
 | Apps | **Learn English with flashcards! (Reword)** by Nikita Olifer, iOS. **GoPrep (formerly IELTS.GG)** by Aleem Labs, iOS. |
-| Our platform | Web (the existing Тіл app on GitHub Pages, Supabase backend, works on iPhone from the browser / Home Screen). |
-| Slice | **Reword's core loop**: daily swipe flashcards with spaced repetition, categories, recall directions, stats. **GoPrep's core loop**: write or speak an IELTS-style answer → get AI band feedback, inside a daily plan built from a target band and exam date. |
-| Not in slice (v1) | Full Reading/Listening mock tests (content-heavy), paywalls, guarantees. |
-| For whom | Bagdaulet personally (vocabulary + IELTS prep), later his students. |
+| Our platform | Web: the existing Тіл app on GitHub Pages + Supabase, used on iPhone from the browser / Home Screen. |
+| Slice | **Reword's core loop**: daily goal of new words + due reviews, swipe cards, categories, streak. **GoPrep's core loop**: target band + exam date → daily plan → write or speak → AI band feedback; plus its "Spoken English" mode (lesson path, free talk, words). |
+| Not in v1 | Full Reading/Listening mock tests (content-heavy), lesson path content, paywalls, guarantees, focus music. |
+| For whom | Bagdaulet personally (vocabulary + IELTS prep, current level B1 → goal 7.0), later his students. |
+| Terms | GoPrep is a paid subscription on his account. We only use screenshots to understand UX patterns for a personal, non-commercial app; if this ever becomes a product, re-check both apps' terms. |
 
-**Core loop of the merged app:** open → today's plan → review due words (swipe) → one writing or speaking task → AI feedback → new weak words go into the deck.
-That last arrow is the reason to merge: GoPrep's feedback suggests vocabulary; in our app those suggestions become flashcards automatically.
+**Core loop of the merged app:** open → today (streak, exam countdown, plan) → new words + due reviews (swipe) → one writing or speaking task → AI feedback → words from the feedback go into the deck.
 
 ## 2. Sources
 
-| source | URL | what it gave |
+| source | URL / file | what it gave |
 | --- | --- | --- |
-| Reword App Store listing (KZ) | https://apps.apple.com/kz/app/learn-english-with-flashcards/id1324697387 | features, recall modes (v4.0), undo (v4.1), stats periods, pricing, reviews asking for sorting and mini-games |
+| Reword App Store listing (KZ) | https://apps.apple.com/kz/app/learn-english-with-flashcards/id1324697387 | features, recall modes (v4.0), undo (v4.1), stats periods, pricing, reviews |
 | GoPrep App Store listing (KZ) | https://apps.apple.com/kz/app/goprep-formerly-ielts-gg/id6787395636 | four skills, AI criteria, voice tutor, daily plan, vocab modes, reminders (v1.1.0), pricing |
+| User's screenshots, Reword | `replica/screens/01–05.png` (local only, not in git) | Learn home, new-word card (both swipe states), Vocabulary, Menu |
+| User's screenshots, GoPrep | `replica/screens/06–16.png` (local only, not in git) | IELTS home, Tests, tutor personas, Statistics, Profile, Preferences, Spoken-English home, review setup, lesson path, Progress |
+| Existing code | github.com/bberikulu-itbil/til, github.com/bberikulu-itbil/TilUiren | Til v0.1: SRS, custom words, audio; TilUiren: quizzes, games, word packs |
 | reword.app | https://reword.app | not read (permission request timed out) |
-| Store screenshots | both listings | **not available** in the fetched page: screen list below is inferred, see confidence |
-| User's own account | — | not used. Best next source: install both, walk the core flows, drop screenshots into `replica/screens/` |
-| Existing code | github.com/bberikulu-itbil/til, github.com/bberikulu-itbil/TilUiren | Til v0.1 already covers SRS, custom words, audio; TilUiren has quizzes, games and word packs worth porting |
-
-Gaps: no screenshots or walkthrough videos yet, so layouts and empty states are guesses.
 
 ## 3. Screen inventory
 
-Confidence: **H** = stated in a listing, **M** = implied by a stated feature, **L** = guessed.
+Source: **R** = Reword, **G** = GoPrep. Seen = in a screenshot (high confidence); listed = only in the store text (medium).
 
-| ID | screen | how you get there | purpose | key components | states | conf |
-| --- | --- | --- | --- | --- | --- | --- |
-| S01 | Onboarding | first launch | target band, exam date, level, daily minutes | stepper, choice chips, date picker | first run | M (GoPrep plan inputs) |
-| S02 | Today | home tab | daily plan: due cards, one task, streak, exam countdown | plan list, progress ring, streak badge | empty plan, all done, exam passed | M |
-| S03 | Swipe review | Today → Review | flashcards, swipe right = know, left = don't know, undo | card stack, audio button, undo, progress | no due cards, last card, offline | H (Reword) |
-| S04 | Review setup | before a session | direction (EN→KZ, KZ→EN, both, random), status filter (all/new/studied), hands-free | segmented controls, toggles | — | H (Reword 4.0 + dev reply) |
-| S05 | Type-the-word review | review mode = production | show translation, type English word, check | input, diff highlight | correct, close (typo), wrong | M (GoPrep "production") |
-| S06 | Categories | Words tab | built-in packs + own categories, progress per category | list with progress bars | empty custom list | H (Reword) |
-| S07 | Category detail | S06 → tap | words in a category, add to learning, sort new/old | word rows, filter, sort | empty, all learned | M |
-| S08 | Add word / category | + button | own word with translation, example; AI fill | form, AI button | AI failed, duplicate | H (Reword custom) |
-| S09 | AI card generator | Words → Generate | cards from a topic or pasted text | prompt input, preview list, accept | generating, model error | H (GoPrep "AI-generated cards") |
-| S10 | Writing task | Practice → Writing | prompt, 40-min timer, word counter, submit | editor, timer, counter | time up, under 250 words, draft saved | H |
-| S11 | Writing feedback | after submit | band per criterion, overall band, corrections inline, vocab suggestions → add to deck | criteria bars, annotated text, suggestion chips | model error, very short essay | H |
-| S12 | Speaking session | Practice → Speaking | Part 1 / 2 (cue card + 1 min prep + 2 min talk) / 3, push-to-talk or hands-free | mic button, cue card, prep timer, transcript | mic denied, no speech, unsupported browser | H |
-| S13 | Speaking feedback | after session | fluency, pace (wpm), pauses, filler words, band estimate, transcript | metric tiles, annotated transcript | too short to score | H |
-| S14 | Progress | Progress tab | words learned, reviews per day (week/month/3m/year), band trend by skill | bar chart, period switch, band line | no data yet | H (Reword periods, GoPrep stats) |
-| S15 | Settings / profile | Profile | reminders time, streak warning, exam date, target band, daily new-word limit | toggles, time picker | push not allowed | H (GoPrep 1.1.0) |
-| S16 | Reading test | Practice → Reading | passage + questions | split view, question types | — | M, out of v1 |
-| S17 | Listening test | Practice → Listening | audio + questions | audio player | — | M, out of v1 |
+| ID | screen | from | how you get there | purpose | key components | states seen | conf |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| S01 | Onboarding / goal | G | first run, Profile | target band, exam date, daily study time (30 min), format (Academic/General), mode (Spoken English / IELTS prep) | choice cards, date picker | — | seen (profile fields) |
+| S02 | Today (IELTS mode) | G | Home tab | exam card: "date not set" + set date, band slider today → goal; "Your plan for today 0/5 · ~58 min" + Start | hero card, band track, plan card | no exam date | seen |
+| S03 | Today (Spoken mode) | G | Home tab | greeting + streak chip; next lesson card; free-talk minutes goal (0 of 15); "Your words: 13 cards to review" | lesson card, progress bar, words card | streak 0 | seen |
+| S04 | Learn home | R | Learn tab | category chosen; **Learn new words** (learned today 0 of 7); **Review words** (5 to review); **Mixed mode**; extra modes that do not affect stats: Browse, Hands-free; stats: week days, current/best streak | settings-style list, day circles, streak tiles | upsell banner | seen |
+| S05 | Card: new word | R | S04 → Learn new words | tabs New / Review (+count badge), daily progress segments (= goal 7), undo; card: status "Learning", category, photo, prompt text, three helpers: type it / reveal / choose from options; swipe one way "I've memorized, review later", the other "Keep showing" | card stack, segmented tabs, helper tiles, swipe labels | mid-swipe both directions | seen |
+| S06 | Card: review | R | S04 → Review words | same card, review queue | as S05 | — | listed |
+| S07 | Review setup | G | Words → review | "13 cards due"; mode: Recognition (word → meaning) / Production (meaning → word, preselected); how-it-works steps | mode cards, info buttons | — | seen |
+| S08 | Vocabulary | R | Vocabulary tab | search, Import, Add category, own words, big lists (expandable), topic categories with word counts, floating "+ Word" | list rows with icons and counts, FAB | own words = 1 | seen |
+| S09 | Add word / category / import | R | S08 | own word, own category, import list | form | — | listed |
+| S10 | Lesson path | G | Spoken mode | chapters → lessons (0 of 15), current lesson highlighted | path with nodes | not started | seen |
+| S11 | Tutor (voice) | G | Tutor tab | pick a tutor personality (Classic, Kind, tougher ones…) → Start talking | carousel, sample line | — | seen |
+| S12 | Tests | G | Tests tab | full exam rehearsal (~2.5 h, all four skills), skill tabs with counts, random test (unfinished first), test list with score and Retake | tabs with counters, list cards | 1 completed | seen |
+| S13 | Writing task + feedback | G | Tests → Writing | prompt, timer, submit; 4 criteria + band + corrections + vocabulary | editor, timer, criteria bars | — | listed |
+| S14 | Speaking task + feedback | G | Tests / Tutor | parts 1–3, fluency, pace, pauses, fillers, band | mic, transcript | — | listed |
+| S15 | Statistics (IELTS) | G | Progress tab | period Week/Month/3 mo/6 mo/All, Overview/Reading/Listening, insights locked until a level check: starting band, weakest skill, typical mistakes, forecast, personal plan | period switch, locked insight rows | all locked | seen |
+| S16 | Progress (Spoken) | G | Progress tab | streak week, speaking minutes (today/week/all), level A1–C2 with current → next (B1 → B2), lessons done | streak card, level bar | 0 days | seen |
+| S17 | Profile & preferences | G | Profile tab | name, email, target band, daily time, format, exam date; UI language EN/RU/UZ; study reminders toggle; mode choice | form rows with edit, toggle, choice cards | reminders off | seen |
+| S18 | Menu | R | Menu tab | full version, settings, other languages, backup / restore / reset progress, support | grouped list | "backup not created since July 15" | seen |
 
 ## 4. User flows
 
 ```
-F01 Daily vocabulary review (Reword core)
-    S02 Today -> S04 setup (remembered, skipped after first time) -> S03 swipe x N -> S02 done
-    happy path: 1 tap to start, 1 swipe per card
-    edge: no due cards (offer new words), undo after wrong swipe, audio unavailable, session interrupted
-F02 Add own word
-    S08 -> type word -> AI fills translation + example -> save -> appears in S07 and in today's new cards
-    happy path: 2 taps + typing (Til v0.1 already does this)
-    edge: duplicate word, AI unavailable (save without translation? no: ask for one)
-F03 Write an essay and get feedback (GoPrep core)
-    S02 task -> S10 write with timer -> submit -> S11 feedback -> tap suggestion -> word added to deck
-    happy path: 3 taps + writing
-    edge: timer ends mid-sentence (auto-submit), < 250 words (warn, still score), model timeout (keep draft)
-F04 Speaking practice
-    S02 task -> S12 pick part -> speak -> S13 feedback -> retry
-    edge: mic denied, Kazakh-accented English misrecognised, silence, iPhone Safari STT limits
-F05 Set exam goal
-    S01 or S15 -> target band + date -> S02 plan rebuilt
-F06 Generate cards from a topic
-    S09 -> "environment, band 7" -> preview 10 cards -> accept all -> S03
+F01 Daily words (R core)                                  happy path: 2 taps + 1 swipe per card
+    S04 -> Learn new words -> S05 swipe x 7 (daily goal) -> S04 -> Review words -> S06 swipe x N
+    edge: goal reached (offer more or mixed mode), nothing due, undo a wrong swipe, swipe vs. helper (type / reveal / choose)
+F02 Review with a chosen mode (G)
+    S03 "Your words" -> S07 pick Recognition or Production -> cards -> done
+F03 Add own word (R + our AI)
+    S08 "+ Word" -> type word -> AI fills translation + example -> saved in "My words"
+F04 Set the goal (G)
+    S02 "Set date" or S17 -> band, date, daily minutes -> S02 shows whether the goal fits in time
+F05 Today's plan (G)
+    S02 Start -> plan items one by one (words, a writing or speaking task) -> 5/5
+F06 Write and get feedback (G)
+    S12 Writing -> S13 write with timer -> submit -> feedback -> suggested words -> deck
+F07 Talk with a tutor (G)
+    S11 pick personality -> speak -> review -> speaking minutes count in S16
 ```
 
 ## 5. Components
 
 | component | variants | states | screens |
 | --- | --- | --- | --- |
-| Flashcard | front/back, direction EN/KZ, with/without example | idle, dragging left/right, flipped, undone | S03, S05 |
-| Swipe controls | buttons as fallback for swipe | disabled at end | S03 |
-| Audio button | word, sentence | playing, unsupported | S03, S07, S11 |
-| Segmented control | 2–4 options | selected | S04, S14 |
-| Timer | countdown, prep timer | running, warning (<5 min), ended | S10, S12 |
-| Mic button | push-to-talk, toggle | idle, listening, denied | S12, Hub |
-| Criteria bar | per IELTS criterion | band 0–9 | S11, S13 |
-| Annotated text | correction (strike + insert), suggestion | tap to explain | S11, S13 |
-| Plan item | review / task / done | due, done, skipped | S02 |
-| Progress bar / ring | category, day | 0–100% | S02, S06 |
-| Bar chart | week / month / 3m / year | empty | S14 |
-| Streak badge | — | active, at risk, broken | S02 |
-| Toast | success, error | — | all |
+| Swipe card | new / review; prompt side = KZ or EN | idle, dragging (label + colour per side), undone | S05, S06 |
+| Card helpers | type the word, reveal, choose from options | used / not used | S05 |
+| Daily progress segments | one segment per card of the goal | filled | S05 |
+| Day circles | Mon–Sun | studied, today, empty | S04, S16 |
+| Streak tiles | current, best | 0, n | S04, S03, S16 |
+| Mode card | recognition / production | selected, preselected | S07 |
+| Hero goal card | exam date set / not set | band today → goal | S02 |
+| Plan card | n/5 done, minutes estimate | not started, in progress, done | S02 |
+| List row with icon + count | category, setting | expandable group | S08, S18 |
+| Period switch | week / month / 3 mo / 6 mo / all | selected | S15 |
+| Level bar | A1–C2 | current, next | S16 |
+| Locked insight row | with unlock hint and minutes | locked, unlocked | S15 |
+| Tab bar | 3 (R) / 5 (G) items | active | all |
+| Floating add button | "+ Word" | — | S08 |
 
 ## 6. Inferred data model
 
-Fits the existing Supabase `items` table (one row per record, `app` + `data` jsonb), except the review log, which is append-heavy.
+Fits the existing Supabase `items` table (`app` + `data` jsonb), plus one append-only review log.
 
 ```
-Word (items, app='lang')  word, translation, example, note, category, level, source (manual|ai|writing),
-                          srs {box, due, seen}
-                          evidence: Reword custom words + categories; GoPrep SRS; Til v0.1   confidence: high
-Category (items, app='lang_cat')  name, kind (pack|own), level
-                          evidence: Reword "create your own categories"                 confidence: high
-Review (new table review_log)  word_id, grade (0|1|2), direction, mode (swipe|type|handsfree), at
-                          evidence: Reword stats by week/month/3m/year need per-review rows  confidence: medium (guess about how they store it)
-Goal (items, app='exam')  target_band, exam_date, current_level, daily_minutes
-                          evidence: GoPrep personalized plan inputs                     confidence: high
-Attempt (items, app='exam_attempt')  skill (writing|speaking), task (task1|task2|part1|part2|part3), prompt,
-                          answer_text | transcript, duration_s, feedback {criteria{...}, band, corrections[], vocab[]}
-                          evidence: GoPrep AI feedback criteria and band breakdown       confidence: high
-Prompt bank (static file in repo)  skill, task, text, topic
-                          evidence: GoPrep question types; our own content              confidence: guess on structure
-Reminder settings (items, app='settings')  remind_at, streak_warning, enabled
-                          evidence: GoPrep 1.1.0                                       confidence: high
+Word (items, app='lang')  word, translation, example, note, category, level (A1–C2), source (manual|ai|feedback),
+                          srs {box, due, seen}, learned_at
+                          evidence: S05 status "Learning" + category label, S08, Til v0.1     confidence: high
+Category (items, app='lang_cat')  name, kind (list|topic|own), icon
+                          evidence: S08 (lists, topics with counts, own words, Add category)  confidence: high
+Review (table review_log)  word_id, grade, mode (new|review|recognition|production|browse), at
+                          evidence: S04 learned today 0 of 7, streaks, S15/S16 periods; browse modes "do not affect stats"
+                          confidence: medium (how they store it is a guess; we need it for stats)
+Profile (items, app='profile')  target_band, current_band, exam_date, exam_format, daily_minutes, daily_new_words (7),
+                          mode (spoken|ielts), reminders {on, at}, level (A1–C2)
+                          evidence: S02, S04, S16, S17                                     confidence: high
+Attempt (items, app='exam_attempt')  skill, task, prompt, answer_text|transcript, duration_s, feedback {criteria, band, corrections[], vocab[]}
+                          evidence: store text on AI feedback; S12 score 0/13, Retake          confidence: high
+Plan day (computed, not stored)  items[] from due cards + weakest skill + daily minutes
+                          evidence: S02 "0/5 completed · ~58 min"                          confidence: medium
 ```
+
+Backups (S18) disappear as a feature: our data already lives in the cloud.
 
 ## 7. Feature matrix
 
-See `replica/features.csv`: 34 rows: must 11, should 10, could 9, skip 4. Already done in Til v0.1: spaced repetition, custom words, example sentences, audio.
+See `replica/features.csv`: 51 rows (must 14, should 15, could 15, skip 7). Already done in Til v0.1: spaced repetition, custom words, example sentences, audio, cloud sync.
 
 ## 8. What cannot be cloned
 
-- **Content**: Reword's thousands of words and translations, GoPrep's passages, recorded listening audio and mock tests. We write our own packs and prompts (AI can draft them, you check them).
-- **Brand**: names Reword, GoPrep, IELTS.GG, "Preppy", "Double Score Guarantee". IELTS is a trademark of its owners: say "IELTS-style", never imply official scoring.
-- **Band accuracy**: AI band scores are estimates; neither app nor ours is an official examiner.
-- **Business model**: paywalls and the refund guarantee are not features for a personal app.
+- **Content**: Reword's lists (its big frequency lists are third-party lists anyway: check licences before using any), topic packs and photos; GoPrep's 78+ tests, passages, recorded audio, lesson path and mascot. We write our own packs, prompts and lessons (AI drafts, you check).
+- **Brand**: Reword, GoPrep, IELTS.GG, the tutor's name and face, "Double Score Guarantee". "IELTS" only descriptively ("IELTS-style"); our bands are estimates, never official.
+- **Focus music**, purchases, upsells.
 
 ## 9. Size
 
-- Screens 17 (15 in v1), flows 6, entities 7.
+- Screens 18 (12 in v1), flows 7, entities 6.
 - Hardest parts:
-  1. **Speaking feedback** that is honest: pace, pauses and fillers can come from browser speech recognition; pronunciation scoring needs an audio-capable model (cost).
-  2. **Writing feedback quality** in a stable format: structured JSON from the model, consistent band estimates across free models.
-  3. **Own content**: word packs by level and topic, writing/speaking prompt bank.
-- Also: swipe gestures that feel native on iPhone Safari; reminders (web push only works after "Add to Home Screen").
-- **Size: M** (a few weeks of evenings). v1 = F01 + F02 + F03 + F05 is about one week.
+  1. **Swipe cards that feel native** on iPhone Safari (drag, labels, undo, no accidental page scroll).
+  2. **Honest AI feedback** for writing and speaking: structured output, stable bands across free models, pronunciation needs an audio model (cost).
+  3. **Own content**: word packs by level/topic, prompt bank, later a lesson path.
+- **Size: M**. v1 = F01 + F02 + F03 + F04 + F06 ≈ one week of evenings.

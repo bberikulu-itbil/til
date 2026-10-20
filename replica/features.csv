@@ -33,3 +33,20 @@ Offline mode,platform,could,Reword,no,service worker on GitHub Pages
 Score guarantee / refund promise,business,skip,GoPrep,skip,commercial promise not a feature
 Original content: word lists / passages / audio / mock tests,content,skip,both,skip,owned by the developers; write our own
 Brand names (Reword / GoPrep / IELTS.GG / Preppy),brand,skip,both,skip,use own names; IELTS only descriptively ('IELTS-style')
+Daily new-word goal (e.g. 7) with progress segments,vocab,must,Reword S04/S05,no,profile.daily_new_words
+Separate new-words and review queues + mixed mode,vocab,must,Reword S04,partial,queue() mixes them; add tabs
+Card helpers: type it / reveal / choose from options,vocab,should,Reword S05,partial,reveal exists; add typing and 4-option choice
+Browse mode that does not affect stats,vocab,could,Reword S04,no,
+Import a word list,vocab,could,Reword S08,no,paste lines 'word - translation'
+Word photos on cards,vocab,skip,Reword S05,skip,licensed photos; maybe emoji or none
+Current and best streak + week day circles,progress,must,both,no,from review_log
+Level A1-C2 (current -> next),progress,should,GoPrep S16,no,set by user or a level check
+Insights unlocked by a level check (weakest skill / typical mistakes / forecast),progress,could,GoPrep S15,no,needs attempts data
+Mode switch: Spoken English / IELTS prep,plan,should,GoPrep S17,no,changes home and plan
+Lesson path (chapters -> lessons),spoken,could,GoPrep S10,no,needs own lesson content
+Free-talk minutes goal + speaking time stats,spoken,should,GoPrep S03/S16,no,count minutes from mic sessions
+Tutor personalities (kind / balanced / strict),spoken,should,GoPrep S11,no,system prompt variants
+Full exam rehearsal (all four skills),tests,could,GoPrep S12,no,after reading and listening exist
+Random test (unfinished first) + retake,tests,could,GoPrep S12,no,
+Focus music while studying,extra,skip,GoPrep S02,skip,licensed audio
+Backup / restore,platform,skip,Reword S18,skip,data is already in Supabase
