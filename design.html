@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тіл: дизайн жүйесі</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Golos+Text:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="ui.css">
+<style>
+/* Page layout only; every component style lives in ui.css. */
+main { max-width: var(--max-width); margin: 0 auto; padding: var(--space-5) max(var(--gutter), env(safe-area-inset-right, 0px)) var(--space-8) max(var(--gutter), env(safe-area-inset-left, 0px)); display: grid; gap: var(--space-7); }
+section { display: grid; gap: var(--space-4); }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); }
+.swatch { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); font-size: var(--fs-xs); }
+.swatch i { display: block; height: 44px; }
+.swatch span { display: block; padding: var(--space-2); }
+.top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-speaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="7" rx="2"/><rect x="13" y="4" width="8" height="7" rx="2"/><rect x="3" y="13" width="8" height="7" rx="2"/><rect x="13" y="13" width="8" height="7" rx="2"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-2"/></symbol>
+    <symbol id="i-cards" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="13" height="16" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h9"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></symbol>
+  </defs>
+</svg>
+<main>
+  <div class="top">
+    <h1 class="t-xl">Тіл: дизайн жүйесі</h1>
+    <button id="theme" class="btn secondary sm" type="button">Тақырыпты ауыстыру</button>
+  </div>
+
+  <section aria-labelledby="h-color">
+    <h2 id="h-color" class="t-lg">Түстер (рөлдер)</h2>
+    <div id="swatches" class="swatches"></div>
+  </section>
+
+  <section aria-labelledby="h-type">
+    <h2 id="h-type" class="t-lg">Қаріптер</h2>
+    <p class="display t-display">Serendipity</p>
+    <p class="display t-xl">Бүгінгі жоспар · 0/5</p>
+    <p class="t-lg">Writing Task 2 — 40 мин</p>
+    <p>Негізгі мәтін: қазақша әріптер әғқңөұүһі дұрыс шығуы керек. English body text sits next to it.</p>
+    <p class="t-sm muted">Көмекші мәтін, 14px</p>
+    <p class="eyebrow">Белгі · 12px</p>
+  </section>
+
+  <section aria-labelledby="h-btn">
+    <h2 id="h-btn" class="t-lg">Батырмалар</h2>
+    <div class="row">
+      <button class="btn" type="button">Бастау</button>
+      <button class="btn secondary" type="button">Кейін</button>
+      <button class="btn ghost" type="button">Барлығын көру</button>
+      <button class="btn danger" type="button">Жою</button>
+      <button class="btn" type="button" disabled>Өшірулі</button>
+      <button class="btn" type="button" aria-busy="true">Тексеріп жатыр…</button>
+      <button class="icon-btn" type="button" aria-label="Тыңдау"><svg width="20" height="20"><use href="#i-speaker"/></svg></button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-form">
+    <h2 id="h-form" class="t-lg">Өрістер</h2>
+    <div class="field"><label for="f1">Ағылшынша сөз</label><input id="f1" class="input" value="resilient"></div>
+    <div class="field"><label for="f2">Аудармасы</label><input id="f2" class="input" aria-invalid="true" aria-describedby="f2e"><span id="f2e" class="error">Аударманы жаз немесе ЖИ-ге қалдыр.</span></div>
+  </section>
+
+  <section aria-labelledby="h-goal">
+    <h2 id="h-goal" class="t-lg">Мақсат картасы (S02)</h2>
+    <div class="goal">
+      <div class="row" style="justify-content:space-between"><b class="t-lg display">Емтиханға 46 күн</b><button class="btn sm" type="button">Күнді өзгерту</button></div>
+      <div class="bands">
+        <span><b>6.0</b><small>Қазір</small></span>
+        <div class="track" role="img" aria-label="6.0 баллдан 7.0 мақсатқа: 50 пайыз"><i style="width:50%"></i></div>
+        <span><b>7.0</b><small>Мақсат</small></span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-home">
+    <h2 id="h-home" class="t-lg">Сөздер басты беті (S04)</h2>
+    <div class="list">
+      <button class="list-row" type="button"><span class="icon"><svg width="20" height="20"><use href="#i-cards"/></svg></span><span>Жаңа сөздер<small>Бүгін 3 / 7</small></span><span class="badge">4</span></button>
+      <button class="list-row" type="button"><span class="icon"><svg width="20" height="20"><use href="#i-undo"/></svg></span><span>Қайталау<small>Бүгін қайталайтын 12 сөз</small></span><svg class="chev" width="20" height="20"><use href="#i-chev"/></svg></button>
+      <button class="list-row" type="button"><span class="icon"><svg width="20" height="20"><use href="#i-grid"/></svg></span><span>Аралас<small>Жаңасы да, қайталауы да</small></span><svg class="chev" width="20" height="20"><use href="#i-chev"/></svg></button>
+    </div>
+    <div class="days" aria-label="Осы апта">
+      <span class="day done"><b>Д</b></span><span class="day done"><b>С</b></span><span class="day today"><b>С</b></span><span class="day"><b>Б</b></span><span class="day"><b>Ж</b></span><span class="day"><b>С</b></span><span class="day"><b>Ж</b></span>
+    </div>
+    <div class="tiles"><div class="tile"><span class="t-sm muted">Қазіргі streak</span><b>2 күн</b></div><div class="tile"><span class="t-sm muted">Ең ұзақ</span><b>9 күн</b></div></div>
+  </section>
+
+  <section aria-labelledby="h-modes">
+    <h2 id="h-modes" class="t-lg">Қайталау режимі (S07)</h2>
+    <div class="modes" role="radiogroup" aria-label="Қайталау режимі">
+      <button class="mode" role="radio" aria-checked="false" type="button"><svg width="22" height="22"><use href="#i-eye"/></svg><b>Тану</b><small>Сөзді көріп, мағынасын еске түсір</small></button>
+      <button class="mode" role="radio" aria-checked="true" type="button"><svg width="22" height="22"><use href="#i-pen"/></svg><b>Еске түсіру</b><small>Мағынасын көріп, сөзді өзің айт</small></button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-card">
+    <h2 id="h-card" class="t-lg">Карточка (S05): сырғытып көр</h2>
+    <div class="row" style="justify-content:space-between"><div class="segments" style="flex:1" aria-label="Бүгін 3 / 7"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div><button id="undo" class="icon-btn" type="button" aria-label="Соңғы жауапты қайтару" disabled><svg width="20" height="20"><use href="#i-undo"/></svg></button></div>
+    <div class="deck">
+      <article id="flash" class="flash" aria-live="polite">
+        <span class="label again">Тағы</span><span class="label know">Білемін</span>
+        <span class="eyebrow">Жаңа сөз · B2 · Қоршаған орта</span>
+        <div class="row" style="justify-content:space-between"><span id="prompt" class="prompt">тұрақты, ұзақ мерзімді</span><button class="icon-btn" type="button" aria-label="Тыңдау"><svg width="20" height="20"><use href="#i-speaker"/></svg></button></div>
+        <div class="helpers">
+          <button type="button" aria-pressed="false"><svg width="22" height="22"><use href="#i-keyboard"/></svg>Жазу</button>
+          <button id="reveal" type="button" aria-pressed="false"><svg width="22" height="22"><use href="#i-eye"/></svg>Көрсету</button>
+          <button id="choose" type="button" aria-pressed="false"><svg width="22" height="22"><use href="#i-grid"/></svg>Таңдау</button>
+        </div>
+        <div id="answer" class="answer" hidden><b class="t-lg" lang="en">sustainable</b><span class="muted" lang="en">Cities need more sustainable transport.</span></div>
+        <div id="choices" class="choices" hidden>
+          <button type="button" lang="en" class="wrong">suitable</button><button type="button" lang="en" class="right">sustainable</button><button type="button" lang="en">sustained</button>
+        </div>
+      </article>
+    </div>
+    <div class="grade"><button id="again" class="btn again secondary" type="button">← Тағы көрсет</button><button id="know" class="btn know" type="button">Білемін →</button></div>
+    <p id="last" class="t-sm muted" role="status"></p>
+  </section>
+
+  <section aria-labelledby="h-seg">
+    <h2 id="h-seg" class="t-lg">Ауыстырғыш, чиптер, деңгей</h2>
+    <div class="segmented" role="tablist"><button role="tab" aria-selected="false" type="button">Апта</button><button role="tab" aria-selected="true" type="button">Ай</button><button role="tab" aria-selected="false" type="button">3 ай</button><button role="tab" aria-selected="false" type="button">Барлығы</button></div>
+    <div class="row"><span class="chip"><span class="skill-dot" style="background:var(--skill-reading)"></span>Reading</span><span class="chip"><span class="skill-dot" style="background:var(--skill-listening)"></span>Listening</span><span class="chip"><span class="skill-dot" style="background:var(--skill-writing)"></span>Writing</span><span class="chip"><span class="skill-dot" style="background:var(--skill-speaking)"></span>Speaking</span></div>
+    <div class="level" aria-label="Деңгей B1, келесісі B2"><span class="done"><i></i>A1</span><span class="done"><i></i>A2</span><span class="done"><i></i>B1</span><span class="now"><i></i>B2</span><span><i></i>C1</span><span><i></i>C2</span></div>
+  </section>
+
+  <section aria-labelledby="h-fb">
+    <h2 id="h-fb" class="t-lg">Жазу бағасы (S13)</h2>
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Writing Task 2 · болжам</span><span class="timer warn" aria-label="Қалған уақыт 4 минут 12 секунд">04:12</span></div>
+    <div class="card criteria">
+      <div class="criterion"><span>Task Response</span><b>6.5</b><div class="bar"><i style="width:72%"></i></div></div>
+      <div class="criterion"><span>Coherence &amp; Cohesion</span><b>6.0</b><div class="bar"><i style="width:67%"></i></div></div>
+      <div class="criterion"><span>Lexical Resource</span><b>6.0</b><div class="bar"><i style="width:67%"></i></div></div>
+      <div class="criterion"><span>Grammar</span><b>5.5</b><div class="bar"><i style="width:61%"></i></div></div>
+    </div>
+    <div class="fix" lang="en"><span><del>peoples thinks</del> → <ins>people think</ins></span><span class="t-sm muted" lang="kk">«people» көпше түр, етістік жалғаусыз.</span></div>
+  </section>
+
+  <section aria-labelledby="h-states">
+    <h2 id="h-states" class="t-lg">Бос күй, жүктелу, хабарлама</h2>
+    <div class="card empty"><h3 class="t-lg">Бүгінге бәрі қайталанды</h3><p>Ертеңге 12 сөз дайын тұр. Қаласаң, жаңа сөз жинағын қос.</p><button class="btn secondary" type="button">Жинақ таңдау</button></div>
+    <div class="stack"><div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div></div>
+    <div class="row"><button id="toast-ok" class="btn secondary sm" type="button">Сәтті хабар</button><button id="toast-err" class="btn secondary sm" type="button">Қате хабары</button></div>
+  </section>
+
+  <section aria-labelledby="h-tab">
+    <h2 id="h-tab" class="t-lg">Төменгі мәзір</h2>
+    <nav class="tabbar" aria-label="Негізгі мәзір" style="position:static;border:1px solid var(--border);border-radius:var(--radius-lg)">
+      <button type="button" aria-current="page"><svg width="22" height="22"><use href="#i-cards"/></svg>Бүгін</button>
+      <button type="button"><svg width="22" height="22"><use href="#i-book"/></svg>Сөздер</button>
+      <button type="button"><svg width="22" height="22"><use href="#i-pen"/></svg>Жаттығу</button>
+      <button type="button"><svg width="22" height="22"><use href="#i-chart"/></svg>Прогресс</button>
+      <button type="button"><svg width="22" height="22"><use href="#i-user"/></svg>Профиль</button>
+    </nav>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script type="module">
+import { attachSwipe, fly } from "./swipe.js";
+const $ = (id) => document.getElementById(id);
+
+// Swatches read the live tokens, so they follow the theme.
+const roles = ["bg", "surface", "surface-2", "border", "border-input", "text", "text-muted", "accent", "accent-soft", "on-accent", "danger", "success", "warning", "skill-reading", "skill-listening", "skill-writing", "skill-speaking"];
+function paint() {
+  const cs = getComputedStyle(document.documentElement);
+  $("swatches").replaceChildren(...roles.map((r) => {
+    const d = document.createElement("div");
+    d.className = "swatch";
+    d.innerHTML = `<i style="background:var(--${r})"></i><span><b>${r}</b><br>${cs.getPropertyValue("--" + r).trim()}</span>`;
+    return d;
+  }));
+}
+paint();
+$("theme").onclick = () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "light" : "dark";
+  paint();
+};
+
+// Swipe demo with undo.
+const words = ["тұрақты, ұзақ мерзімді", "барлық жерде кездесетін", "төзімді", "кездейсоқ олжа"];
+let i = 0, done = 0, history = [];
+const show = () => { $("prompt").textContent = words[i % words.length]; $("answer").hidden = true; $("choices").hidden = true; for (const b of document.querySelectorAll(".helpers button")) b.setAttribute("aria-pressed", "false"); };
+function answer(dir) {
+  history.push(i);
+  i++; done++;
+  $("last").textContent = dir === "right" ? "Білемін: сөз келесі қорапқа өтті." : "Тағы: сөз осы сессияда қайта шығады.";
+  $("undo").disabled = false;
+  show();
+}
+attachSwipe($("flash"), answer);
+$("know").onclick = () => fly($("flash"), "right", () => answer("right"));
+$("again").onclick = () => fly($("flash"), "left", () => answer("left"));
+$("undo").onclick = () => { i = history.pop() ?? i; $("undo").disabled = !history.length; $("last").textContent = "Соңғы жауап қайтарылды."; show(); };
+$("reveal").onclick = (e) => { $("answer").hidden = false; e.currentTarget.setAttribute("aria-pressed", "true"); };
+$("choose").onclick = (e) => { $("choices").hidden = false; e.currentTarget.setAttribute("aria-pressed", "true"); };
+for (const b of document.querySelectorAll(".mode")) b.onclick = () => { for (const m of document.querySelectorAll(".mode")) m.setAttribute("aria-checked", String(m === b)); };
+for (const b of document.querySelectorAll(".segmented button")) b.onclick = () => { for (const s of b.parentElement.children) s.setAttribute("aria-selected", String(s === b)); };
+
+let timer;
+const toast = (text, error) => { const t = $("toast"); t.textContent = text; t.className = "toast" + (error ? " error" : ""); t.hidden = false; clearTimeout(timer); timer = setTimeout(() => (t.hidden = true), 2500); };
+$("toast-ok").onclick = () => toast("«resilient» сөздікке қосылды.");
+$("toast-err").onclick = () => toast("Сақталмады: интернет байланысын тексер.", true);
+</script>
+</body>
+</html>

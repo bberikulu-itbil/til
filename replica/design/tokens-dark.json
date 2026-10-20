@@ -1,0 +1,189 @@
+{
+  "_about": "Тіл tokens, dark theme (same roles). Check: python3 contrast.py tokens-dark.json",
+  "color": {
+    "bg": "#0d1116",
+    "surface": "#161b22",
+    "surface-2": "#1d2633",
+    "border": "#2a323d",
+    "border-input": "#6b7686",
+    "text": "#e5e9ef",
+    "text-muted": "#9aa5b3",
+    "accent": "#7c9cff",
+    "accent-soft": "#1c2a4a",
+    "on-accent": "#0b1430",
+    "danger": "#ff7a73",
+    "success": "#45c486",
+    "warning": "#e3a63c",
+    "on-status": "#0d1116",
+    "skill-reading": "#6f9cff",
+    "skill-listening": "#f08a4b",
+    "skill-writing": "#b48cff",
+    "skill-speaking": "#3fc7b3"
+  },
+  "pairs": [
+    [
+      "text",
+      "bg"
+    ],
+    [
+      "text",
+      "surface"
+    ],
+    [
+      "text",
+      "surface-2"
+    ],
+    [
+      "text-muted",
+      "bg"
+    ],
+    [
+      "text-muted",
+      "surface"
+    ],
+    [
+      "text-muted",
+      "surface-2"
+    ],
+    [
+      "on-accent",
+      "accent"
+    ],
+    [
+      "accent",
+      "bg"
+    ],
+    [
+      "accent",
+      "surface"
+    ],
+    [
+      "accent",
+      "accent-soft"
+    ],
+    [
+      "danger",
+      "surface"
+    ],
+    [
+      "success",
+      "surface"
+    ],
+    [
+      "warning",
+      "surface"
+    ],
+    [
+      "on-status",
+      "success"
+    ],
+    [
+      "on-status",
+      "danger"
+    ],
+    [
+      "border-input",
+      "bg",
+      "ui"
+    ],
+    [
+      "border-input",
+      "surface",
+      "ui"
+    ],
+    [
+      "accent",
+      "surface",
+      "ui"
+    ],
+    [
+      "skill-reading",
+      "surface",
+      "ui"
+    ],
+    [
+      "skill-listening",
+      "surface",
+      "ui"
+    ],
+    [
+      "skill-writing",
+      "surface",
+      "ui"
+    ],
+    [
+      "skill-speaking",
+      "surface",
+      "ui"
+    ]
+  ],
+  "font": {
+    "display": "Geologica, 'Golos Text', system-ui, sans-serif",
+    "sans": "'Golos Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+  },
+  "type": {
+    "xs": {
+      "size": 12,
+      "line": 16,
+      "weight": 500
+    },
+    "sm": {
+      "size": 14,
+      "line": 20,
+      "weight": 400
+    },
+    "base": {
+      "size": 16,
+      "line": 24,
+      "weight": 400
+    },
+    "lg": {
+      "size": 20,
+      "line": 28,
+      "weight": 600
+    },
+    "xl": {
+      "size": 28,
+      "line": 34,
+      "weight": 600
+    },
+    "display": {
+      "size": 40,
+      "line": 44,
+      "weight": 600
+    }
+  },
+  "space": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "radius": {
+    "sm": 8,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow": {
+    "card": "0 1px 2px rgba(18,24,33,.06), 0 2px 6px rgba(18,24,33,.06)",
+    "pop": "0 16px 40px rgba(18,24,33,.18)"
+  },
+  "motion": {
+    "fast": "120ms",
+    "base": "200ms",
+    "swipe": "260ms",
+    "ease": "cubic-bezier(.2,.8,.2,1)"
+  },
+  "layout": {
+    "max_width": 640,
+    "header": 52,
+    "tabbar": 56,
+    "gutter": 16
+  }
+}

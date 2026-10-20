@@ -1,0 +1,51 @@
+# light
+  AAA   16.17:1  text                     on bg                   
+  AAA   17.82:1  text                     on surface              
+  AAA   15.17:1  text                     on surface-2            
+  AA     5.97:1  text-muted               on bg                   
+  AA     6.57:1  text-muted               on surface              
+  AA     5.60:1  text-muted               on surface-2            
+  AA     5.44:1  on-accent                on accent               
+  AA     4.94:1  accent                   on bg                   
+  AA     5.44:1  accent                   on surface              
+  AA     4.52:1  accent                   on accent-soft          
+  AA     5.29:1  danger                   on surface              
+  AA     5.34:1  success                  on surface              
+  AA     5.73:1  warning                  on surface              
+  AA     5.34:1  on-status                on success              
+  AA     5.29:1  on-status                on danger               
+  PASS   3.30:1  border-input             on bg                   ui
+  PASS   3.63:1  border-input             on surface              ui
+  PASS   5.44:1  accent                   on surface              ui
+  PASS   5.03:1  skill-reading            on surface              ui
+  PASS   5.42:1  skill-listening          on surface              ui
+  PASS   5.10:1  skill-writing            on surface              ui
+  PASS   4.59:1  skill-speaking           on surface              ui
+
+  22 pairs, 0 failing AA
+
+# dark
+  AAA   15.54:1  text                     on bg                   
+  AAA   14.20:1  text                     on surface              
+  AAA   12.51:1  text                     on surface-2            
+  AAA    7.58:1  text-muted               on bg                   
+  AA     6.93:1  text-muted               on surface              
+  AA     6.10:1  text-muted               on surface-2            
+  AA     6.96:1  on-accent                on accent               
+  AAA    7.27:1  accent                   on bg                   
+  AA     6.64:1  accent                   on surface              
+  AA     5.45:1  accent                   on accent-soft          
+  AA     6.82:1  danger                   on surface              
+  AAA    7.82:1  success                  on surface              
+  AAA    8.06:1  warning                  on surface              
+  AAA    8.56:1  on-status                on success              
+  AAA    7.47:1  on-status                on danger               
+  PASS   4.11:1  border-input             on bg                   ui
+  PASS   3.76:1  border-input             on surface              ui
+  PASS   6.64:1  accent                   on surface              ui
+  PASS   6.49:1  skill-reading            on surface              ui
+  PASS   6.95:1  skill-listening          on surface              ui
+  PASS   6.70:1  skill-writing            on surface              ui
+  PASS   8.26:1  skill-speaking           on surface              ui
+
+  22 pairs, 0 failing AA
