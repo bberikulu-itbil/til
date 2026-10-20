@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тіл</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Golos+Text:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen app like Life Hub; the review card is the centre, the dictionary a searchable list. Same tokens as the Hub, accent = the Til app's blue. */
+:root {
+  --bg: #f1f3f6; --surface: #ffffff; --ink: #121821; --muted: #5a6574; --line: #dce1e8;
+  --accent: #3461d9; --on-accent: #ffffff; --danger: #c23b36; --good: #1d8a55; --warn: #b2740a;
+  --font-display: "Geologica", "Golos Text", system-ui, sans-serif;
+  --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1116; --surface: #161b22; --ink: #e5e9ef; --muted: #96a1af; --line: #272e38;
+    --accent: #6f95ff; --on-accent: #0b1430; --danger: #ff7a73; --good: #45c486; --warn: #e3a63c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1116; --surface: #161b22; --ink: #e5e9ef; --muted: #96a1af; --line: #272e38;
+  --accent: #6f95ff; --on-accent: #0b1430; --danger: #ff7a73; --good: #45c486; --warn: #e3a63c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font-body); -webkit-text-size-adjust: 100%; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
+
+.app { height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { flex: none; display: flex; align-items: center; gap: 12px; padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
+.brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.brand::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+.stats { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hub { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; }
+.view { flex: 1; min-height: 0; overflow-y: auto; padding-block: 8px 20px; }
+
+.btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 600; background: var(--accent); color: var(--on-accent); }
+.btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
+.btn:disabled { opacity: .5; cursor: default; }
+input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+input:focus { border-color: var(--accent); outline: none; }
+label { font-size: 13px; font-weight: 500; color: var(--muted); }
+.msg-line { min-height: 1.5em; margin: 0; font-size: 14px; color: var(--muted); }
+.icon-btn { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--accent); }
+
+.login { display: grid; align-content: center; gap: 16px; }
+.form { display: grid; gap: 10px; max-width: 380px; }
+
+/* Review */
+.review { display: flex; flex-direction: column; gap: 16px; }
+.progress { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 20px; display: grid; gap: 14px; justify-items: center; text-align: center; min-height: 300px; align-content: center; }
+.word { font-family: var(--font-display); font-size: clamp(28px, 8vw, 40px); line-height: 1.15; overflow-wrap: anywhere; }
+.box-label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.answer { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; width: 100%; }
+.translation { font-size: 22px; font-weight: 600; overflow-wrap: anywhere; }
+.example { color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
+.grades { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.grades button { border-radius: 14px; padding: 12px 6px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; display: grid; gap: 2px; }
+.grades small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.g0 { color: var(--danger); } .g1 { color: var(--warn); } .g2 { color: var(--good); }
+.done { text-align: center; display: grid; gap: 10px; justify-items: center; padding-top: 40px; }
+.done p { margin: 0; color: var(--muted); max-width: 40ch; }
+
+/* Dictionary */
+.add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+@media (max-width: 520px) { .add { grid-template-columns: 1fr; } }
+.add div { display: grid; gap: 4px; min-width: 0; }
+.list { list-style: none; margin: 8px 0 0; padding: 0; }
+.list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.list b { font-weight: 600; overflow-wrap: anywhere; }
+.list span { display: block; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.dots { display: flex; gap: 3px; } .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); } .dots i.on { background: var(--accent); }
+.del { background: none; border: 1px solid transparent; border-radius: 8px; color: var(--muted); padding: 2px 8px; font-size: 13px; }
+.del.armed { border-color: var(--danger); color: var(--danger); }
+.note { color: var(--muted); padding: 16px 0; }
+.search { margin-top: 16px; }
+
+.tabs { flex: none; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); background: var(--surface); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabs button { background: none; border: 0; padding: 12px 4px 13px; font-size: 14px; font-weight: 500; color: var(--muted); }
+.tabs button[aria-current="page"] { color: var(--ink); box-shadow: inset 0 2px 0 var(--accent); }
+@media (prefers-reduced-motion: reduce) { .progress i { transition: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="spk" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+<div class="app">
+  <header class="top gutter">
+    <div class="brand">Тіл</div>
+    <span id="stats" class="stats"></span>
+    <a class="hub" href="../life-hub/">Hub</a>
+  </header>
+
+  <main id="login" class="view login gutter" hidden>
+    <h1>Тіл</h1>
+    <p class="msg-line">Life Hub аккаунтыңмен кір.</p>
+    <form id="login-form" class="form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <label for="password">Құпиясөз</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button id="login-btn" class="btn" type="submit">Кіру</button>
+      <p id="login-msg" class="msg-line" role="status"></p>
+    </form>
+  </main>
+
+  <main id="review" class="view review gutter" hidden>
+    <div class="progress" aria-hidden="true"><i id="bar" style="width:0"></i></div>
+    <div id="card" class="card">
+      <span id="box" class="box-label"></span>
+      <div id="word" class="word" lang="en"></div>
+      <button id="say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#spk"/></svg></button>
+      <div id="answer" class="answer" hidden>
+        <div id="translation" class="translation"></div>
+        <div id="example" class="example" lang="en"></div>
+      </div>
+      <button id="reveal" class="btn" type="button">Аудармасын көрсету</button>
+    </div>
+    <div id="grades" class="grades" hidden>
+      <button class="g0" type="button" data-grade="0">Білмедім<small>10 мин</small></button>
+      <button class="g1" type="button" data-grade="1">Қиын<small id="g1"></small></button>
+      <button class="g2" type="button" data-grade="2">Білдім<small id="g2"></small></button>
+    </div>
+    <div id="done" class="done" hidden>
+      <h2>Бүгінге бәрі қайталанды</h2>
+      <p id="done-text"></p>
+      <button id="to-dict" class="btn ghost" type="button">Сөздікке жаңа сөз қосу</button>
+    </div>
+  </main>
+
+  <main id="dict" class="view gutter" hidden>
+    <form id="add" class="add">
+      <div><label for="new-word">Ағылшынша сөз</label><input id="new-word" lang="en" autocomplete="off" required></div>
+      <div><label for="new-tr">Аудармасы (бос қалса, ЖИ толтырады)</label><input id="new-tr" autocomplete="off"></div>
+      <button id="add-btn" class="btn" type="submit">Қосу</button>
+    </form>
+    <p id="add-msg" class="msg-line" role="status"></p>
+    <input id="search" class="search" type="search" placeholder="Іздеу…" aria-label="Сөздіктен іздеу">
+    <ul id="list" class="list"></ul>
+  </main>
+
+  <nav id="tabs" class="tabs" hidden>
+    <button type="button" data-view="review">Қайталау</button>
+    <button type="button" data-view="dict">Сөздік</button>
+  </nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script type="module">
+import { review, queue, INTERVALS, LEARNED_BOX } from "./srs.js";
+
+// Same Supabase project as Life Hub; both sites live on bberikulu-itbil.github.io, so the sign-in is shared.
+const sb = supabase.createClient("https://lcmnkcpkbkrktediyvpo.supabase.co", "sb_publishable_Z0BZxemzhkUPo_lfgxMAbA_9TkVXL2q");
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const BOXES = ["жаңа", "1 күн", "3 күн", "1 апта", "2 апта", "1 ай", "3 ай"];
+const days = (n) => (n === 0 ? "10 мин" : n < 7 ? `${n} күн` : n < 30 ? `${n / 7} апта` : `${n / 30} ай`);
+
+let words = [], todo = [], pos = 0, view = "review";
+
+/* ---------- speech ---------- */
+function speak(text) {
+  if (!text || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith("en-US")) || speechSynthesis.getVoices().find((v) => v.lang.startsWith("en")) || null;
+  u.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+/* ---------- views ---------- */
+function show(next) {
+  view = next;
+  for (const v of ["login", "review", "dict"]) $(v).hidden = v !== next;
+  $("tabs").hidden = next === "login";
+  for (const b of $("tabs").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
+  if (next === "review") startReview();
+  if (next === "dict") renderList();
+}
+for (const b of $("tabs").children) b.onclick = () => show(b.dataset.view);
+$("to-dict").onclick = () => show("dict");
+
+async function load() {
+  const { data, error } = await sb.from("items").select("id, data, created_at").eq("app", "lang").order("created_at", { ascending: false }).limit(2000);
+  if (error) { $("stats").textContent = "Жүктелмеді"; return; }
+  words = data;
+  const learned = words.filter((w) => (w.data.srs?.box ?? 0) >= LEARNED_BOX).length;
+  $("stats").textContent = `${words.length} сөз · ${learned} үйренілді`;
+}
+
+/* ---------- review ---------- */
+function startReview() {
+  todo = queue(words);
+  pos = 0;
+  showCard();
+}
+function showCard() {
+  const w = todo[pos];
+  $("bar").style.width = todo.length ? `${(pos / todo.length) * 100}%` : "100%";
+  $("card").hidden = !w;
+  $("done").hidden = !!w;
+  $("grades").hidden = true;
+  if (!w) {
+    $("done-text").textContent = words.length
+      ? "Келесі сөздер уақыты келгенде осында шығады. Hub ассистентіне «… сөзін сөздікке қос» деп жазсаң да болады."
+      : "Сөздік әзірге бос. Сөздік бөлімінен қос немесе Hub ассистентіне «serendipity сөзін сөздікке қос» деп жаз.";
+    return;
+  }
+  const box = w.data.srs?.box ?? 0;
+  $("box").textContent = `${pos + 1} / ${todo.length} · ${w.data.srs ? "қайталау" : "жаңа сөз"}`;
+  $("word").textContent = w.data.word;
+  $("translation").textContent = w.data.translation || "—";
+  $("example").textContent = w.data.example || "";
+  $("answer").hidden = true;
+  $("reveal").hidden = false;
+  $("g1").textContent = days(INTERVALS[Math.max(box, 1)]);
+  $("g2").textContent = days(INTERVALS[Math.min(box + 1, INTERVALS.length - 1)]);
+}
+$("say").onclick = () => speak(todo[pos]?.data.word);
+$("reveal").onclick = () => {
+  $("answer").hidden = false;
+  $("reveal").hidden = true;
+  $("grades").hidden = false;
+  if (todo[pos]?.data.example) $("example").onclick = () => speak(todo[pos].data.example);
+};
+for (const b of $("grades").children) b.onclick = async () => {
+  const w = todo[pos];
+  const grade = Number(b.dataset.grade);
+  const data = { ...w.data, srs: review(w.data.srs, grade) };
+  const { error } = await sb.from("items").update({ data }).eq("id", w.id);
+  if (error) { $("box").textContent = "Сақталмады: " + error.message; return; }
+  w.data = data;
+  if (grade === 0) todo.push(w); // forgotten words come back at the end of this session
+  pos++;
+  showCard();
+  load();
+};
+
+/* ---------- dictionary ---------- */
+function renderList() {
+  const q = $("search").value.trim().toLowerCase();
+  const shown = q ? words.filter((w) => `${w.data.word} ${w.data.translation}`.toLowerCase().includes(q)) : words;
+  if (!shown.length) return $("list").replaceChildren(el("li", "note", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос."));
+  $("list").replaceChildren(...shown.map((w) => {
+    const li = el("li");
+    const text = el("div");
+    text.append(el("b", "", w.data.word), el("span", "", w.data.translation || ""));
+    const dots = el("div", "dots");
+    dots.title = "Қайталау кезеңі: " + BOXES[w.data.srs?.box ?? 0];
+    for (let i = 1; i < INTERVALS.length; i++) dots.append(el("i", i <= (w.data.srs?.box ?? 0) ? "on" : ""));
+    const say = el("button", "icon-btn");
+    say.type = "button";
+    say.setAttribute("aria-label", "Айтылуын тыңдау");
+    say.innerHTML = '<svg width="18" height="18" aria-hidden="true"><use href="#spk"/></svg>';
+    say.onclick = () => speak(w.data.word);
+    const del = el("button", "del", "Жою");
+    del.type = "button";
+    del.onclick = async () => {
+      if (!del.classList.contains("armed")) {
+        del.classList.add("armed"); del.textContent = "Иә, жою";
+        setTimeout(() => { del.classList.remove("armed"); del.textContent = "Жою"; }, 3000);
+        return;
+      }
+      const { error } = await sb.from("items").delete().eq("id", w.id);
+      if (!error) { words = words.filter((x) => x !== w); renderList(); load(); }
+    };
+    li.append(text, dots, say, del);
+    return li;
+  }));
+}
+$("search").oninput = renderList;
+$("add").onsubmit = async (e) => {
+  e.preventDefault();
+  const word = $("new-word").value.trim(), translation = $("new-tr").value.trim();
+  if (!word) return;
+  $("add-btn").disabled = true;
+  $("add-msg").textContent = translation ? "Сақталып жатыр…" : "ЖИ аударма мен мысал іздеп жатыр…";
+  let error;
+  if (translation) {
+    ({ error } = await sb.from("items").insert({ app: "lang", data: { word, translation } }));
+  } else {
+    // The Hub assistant translates and saves; it reads the Hub's model list from this shared site storage.
+    let models = [];
+    try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
+    const res = await sb.functions.invoke("assistant", { body: { messages: [{ role: "user", content: `"${word}" сөзін сөздікке қос` }], models } });
+    error = res.error || (res.data?.actions?.some((a) => a.tool === "add_word" && a.ok) ? null : { message: res.data?.reply || "ЖИ сөзді сақтамады" });
+    if (res.error) { try { error = { message: (await res.error.context.json()).error }; } catch { /* keep the original */ } }
+  }
+  $("add-btn").disabled = false;
+  if (error) return ($("add-msg").textContent = "Қосылмады: " + error.message);
+  $("add-msg").textContent = `«${word}» қосылды.`;
+  $("new-word").value = ""; $("new-tr").value = "";
+  await load();
+  renderList();
+};
+
+/* ---------- auth ---------- */
+$("login-form").onsubmit = async (e) => {
+  e.preventDefault();
+  $("login-btn").disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+  $("login-btn").disabled = false;
+  $("login-msg").textContent = error ? (error.message === "Invalid login credentials" ? "Email немесе құпиясөз қате." : error.message) : "";
+};
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return; // keep the review session where it is
+  if (!session) return show("login");
+  // supabase-js asks not to await its own calls inside this callback, so load right after it.
+  setTimeout(async () => { await load(); show(view === "login" ? "review" : view); });
+});
+</script>
+</body>
+</html>
