@@ -20,6 +20,12 @@ Life Hub жүйесінің Liquid Glass стилі. Түстер мен шын�
 
 Төрт ойын сөздіктегі сөздермен жүреді (`practice.js`): сөз сәйкестендіру (5 жұп, уақытқа), жылдам сұрақ-жауап (60 секунд), сөйлем құрастыру (мысал сөйлемі бар сөздер, 5 раунд), есту арқылы жазу (5 сөз). Нәтиже қорап пен XP-ге әсер етпейді. IELTS пен ҰБТ тапсырмалары әлі жоқ.
 
+## Чат
+
+Төрт кейіпкер: Baymax (тәлімгер), IELTS Examiner (Speaking, соңында band бағасы), Native Speaker (ауызекі тіл), Grammar Guru (грамматика қазақша). Әр жауап астында: тыңдау, қазақшаға аудару, грамматикалық ереже, жауап кеңестері (3 нұсқа, басқанда енгізу жолына түседі). Слэш-командалар: `/translate`, `/grammar`, `/explain` (мәтінсіз жазсаң, әріптестің соңғы хабарына қолданылады). Сұхбат осы құрылғының `localStorage`-ында сақталады.
+
+Сервер: Edge Function `til-chat` (`supabase/functions/til-chat/`), Hub ассистентіндегідей тек иесіне ашық (`is_hub_owner`) және OpenRouter кілті `OPENROUTER_API_KEY` Secrets-те. Моделдер тізімін Hub-тағы `hub.models` ортақ сақтауынан алады. Функция `main`-ге push-пен шықпайды: Supabase-ке бөлек орнатылады.
+
 ## Сөздік
 
 Төменгі мәзір: Басты бет · Сөздік · Жаттығу · Чат · Профиль. Жаттығу мен Чат әзірге бос беттер.
@@ -38,5 +44,5 @@ Leitner жүйесі (`srs.js`): «Білдім» десең, сөз келес�
 ## Тексеру
 
 ```
-node --test test/srs.test.mjs test/stats.test.mjs test/swipe.test.mjs test/dict.test.mjs
+node --test test/srs.test.mjs test/stats.test.mjs test/swipe.test.mjs test/dict.test.mjs test/practice.test.mjs test/chat.test.mjs
 ```

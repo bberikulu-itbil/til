@@ -35,6 +35,17 @@ html, body { height: 100%; }
 .add-box summary { font-weight: 600; cursor: pointer; } .add-box[open] summary { margin-bottom: var(--space-3); }
 .filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
 #game .prompt, #wod .prompt { font: 600 var(--fs-xl)/var(--lh-xl) var(--font-display); }
+#chat.view { display: flex; flex-direction: column; overflow: hidden; gap: var(--space-3); padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); }
+#chat-log { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-1) 0; }
+.bubble { max-width: 88%; padding: var(--space-2) var(--space-3); border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; align-self: flex-start; }
+.bubble.me { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.msg { display: grid; gap: var(--space-1); max-width: 88%; align-self: flex-start; } .msg .bubble { max-width: none; }
+.msg-tools { display: flex; gap: var(--space-1); } .msg-tools .icon-btn { width: 36px; height: 36px; }
+.note { background: var(--surface-2); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); white-space: pre-wrap; overflow-wrap: anywhere; }
+.hints { display: grid; gap: var(--space-1); } .hints button { text-align: left; min-height: 40px; padding: var(--space-1) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--accent); background: var(--accent-soft); color: var(--text); cursor: pointer; }
+.composer { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+.icon-btn.send { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.avatar { font-weight: 700; color: var(--accent); }
 .pair-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .pair-grid button, .chips button { min-height: 48px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; overflow-wrap: anywhere; }
 .pair-grid button[aria-pressed="true"], .chips button.sel { border-color: var(--accent); background: var(--accent-soft); }
@@ -60,6 +71,9 @@ html, body { height: 100%; }
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></symbol>
     <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></symbol>
@@ -228,7 +242,21 @@ html, body { height: 100%; }
 
   <main id="chats" class="view gutter" hidden>
     <h1 class="t-xl">Чат</h1>
-    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">ЖИ сұхбаттары: Baymax, IELTS Examiner, Native Speaker және Grammar Guru. Әр хабарламаға аудио, аударма, грамматика талдауы және жауап кеңестері.</p></div>
+    <div id="persona-list" class="list"></div>
+    <p class="t-sm muted">Сұхбат осы құрылғыда сақталады. Чатқа оқушылардың аты-жөнін, телефонын жазба: хабарлама ЖИ моделіне кетеді.</p>
+  </main>
+
+  <main id="chat" class="view gutter" hidden>
+    <div class="row" style="flex:none;flex-wrap:nowrap">
+      <button id="chat-back" class="icon-btn" type="button" aria-label="Чаттар тізіміне"><svg width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <b id="chat-name" style="flex:1"></b>
+      <button id="chat-reset" class="icon-btn" type="button" aria-label="Сұхбатты бастан бастау"><svg width="20" height="20" aria-hidden="true"><use href="#i-undo"/></svg></button>
+    </div>
+    <div id="chat-log" role="log" aria-live="polite"></div>
+    <form id="chat-form" class="composer">
+      <input id="chat-input" class="input" lang="en" autocomplete="off" aria-label="Хабарлама" placeholder="Жаз… (/translate, /grammar, /explain)">
+      <button id="chat-send" class="icon-btn send" type="submit" aria-label="Жіберу"><svg width="20" height="20" aria-hidden="true"><use href="#i-send"/></svg></button>
+    </form>
   </main>
 
   <main id="profile" class="view gutter" hidden>
@@ -257,6 +285,7 @@ html, body { height: 100%; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
 import { review, queue, INTERVALS } from "./srs.js";
+import { parseSlash } from "./chat.js";
 import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk } from "./practice.js";
 import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
@@ -336,13 +365,14 @@ function buildQueue(kind) {
 /* ---------- views ---------- */
 function show(next) {
   view = next;
-  for (const v of ["login", "today", "session", "words", "practice", "chats", "profile"]) $(v).hidden = v !== next;
+  for (const v of ["login", "today", "session", "words", "practice", "chats", "chat", "profile"]) $(v).hidden = v !== next;
   if (next !== "login") updatePick();
-  $("tabbar").hidden = next === "login" || next === "session";
+  $("tabbar").hidden = next === "login" || next === "session" || next === "chat";
   for (const b of $("tabbar").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
   if (next === "today" && profile) renderToday(); // before the first load the skeleton stays
   if (next === "words") renderWords();
   if (next === "practice") endGame();
+  if (next === "chats") renderPersonas();
   if (next === "profile") { $("goal").value = profile?.daily_new_words ?? 7; }
 }
 for (const b of $("tabbar").children) b.onclick = () => show(b.dataset.view);
@@ -807,6 +837,97 @@ function playSpelling() {
   };
   round();
 }
+
+/* ---------- Chat: four AI personas (Edge Function til-chat) ---------- */
+const PERSONAS = [
+  { id: "baymax", name: "Baymax", role: "Мейірімді тәлімгер", open: "Hi! I'm Baymax. I'm here to help you practise English. What would you like to talk about today?" },
+  { id: "examiner", name: "IELTS Examiner", role: "Speaking емтиханы", open: "Good afternoon. This is the IELTS Speaking test. Let's begin with Part 1. Can you tell me your full name, please?" },
+  { id: "native", name: "Native Speaker", role: "Күнделікті ауызекі тіл", open: "Hey! What's up? How's your day going so far?" },
+  { id: "grammar", name: "Grammar Guru", role: "Грамматика қазақша", open: "Сәлем! Мен Grammar Guru. Грамматикадан сұрағыңды жаз немесе ағылшынша сөйлем жібер, тексеріп беремін." },
+];
+let chat = null; // { p, msgs: [{ role: "user" | "assistant" | "cmd", content, reply?, note?, hints? }] }
+const chatKey = (id) => "til.chat." + id;
+function loadChat(id) {
+  try { const m = JSON.parse(localStorage.getItem(chatKey(id))); if (Array.isArray(m) && m.length) return m; } catch { /* storage off or broken */ }
+  return [{ role: "assistant", content: PERSONAS.find((p) => p.id === id).open }];
+}
+function saveChat() { try { localStorage.setItem(chatKey(chat.p.id), JSON.stringify(chat.msgs.slice(-40).map(({ hints, ...m }) => m))); } catch { /* storage full or off */ } }
+function renderPersonas() {
+  $("persona-list").replaceChildren(...PERSONAS.map((p) => {
+    const last = loadChat(p.id).at(-1), b = el("button", "list-row"); b.type = "button";
+    const icon = el("span", "icon avatar", p.name[0]), text = el("span"), preview = el("small", "", (last.reply ?? last.content).slice(0, 60));
+    text.append(p.name, el("small", "", p.role), preview);
+    b.append(icon, text, Object.assign(el("span"), { innerHTML: '<svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg>' }));
+    b.onclick = () => openChat(p);
+    return b;
+  }));
+}
+function openChat(p) { chat = { p, msgs: loadChat(p.id) }; $("chat-name").textContent = p.name; show("chat"); renderChat(); $("chat-input").focus(); }
+$("chat-back").onclick = () => show("chats");
+$("chat-reset").onclick = () => { chat.msgs = [{ role: "assistant", content: chat.p.open }]; saveChat(); renderChat(); };
+
+const lastPartner = () => chat.msgs.findLast((m) => m.role === "assistant" || m.role === "cmd")?.content;
+async function callChat(body) {
+  let models = [];
+  try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
+  const res = await sb.functions.invoke("til-chat", { body: { ...body, models } });
+  if (res.error) { let msg = res.error.message; try { msg = (await res.error.context.json()).error; } catch { /* keep it */ } throw new Error(msg); }
+  return res.data;
+}
+const history = () => chat.msgs.filter((m) => m.role === "user" || m.role === "assistant").map(({ role, content }) => ({ role, content }));
+
+function msgNode(m, i, isLastPartner) {
+  const me = m.role === "user" || m.role === "cmd";
+  const bubble = el("div", "bubble" + (me ? " me" : ""), m.content); if (!me) bubble.lang = "en";
+  if (m.role === "user") return bubble;
+  const box = el("div", "msg");
+  if (m.role === "cmd") { box.style.alignSelf = "flex-end"; box.append(bubble, el("div", "note", m.reply)); return box; }
+  const tools = el("div", "msg-tools");
+  const tool = (icon, label, fn) => { const b = el("button", "icon-btn"); b.type = "button"; b.setAttribute("aria-label", label); b.innerHTML = `<svg width="18" height="18" aria-hidden="true"><use href="#i-${icon}"/></svg>`; b.onclick = () => fn(b); tools.append(b); };
+  tool("speaker", "Тыңдау", () => speak(m.content));
+  tool("globe", "Қазақшаға аудару", (b) => ask(b, m, "translate", "note"));
+  tool("book", "Грамматикалық ереже", (b) => ask(b, m, "rule", "rule"));
+  if (isLastPartner) tool("bulb", "Жауап кеңестері", (b) => ask(b, m, "hint", "hints"));
+  box.append(bubble, tools);
+  for (const [field, label] of [["note", "Аударма"], ["rule", "Ереже"]]) if (m[field]) { const n = el("div", "note"); n.append(el("b", "", label + ": "), m[field]); box.append(n); }
+  if (m.hints) { const h = el("div", "hints"); h.lang = "en"; for (const t of m.hints) { const b = el("button", "", t); b.type = "button"; b.onclick = () => { $("chat-input").value = t; $("chat-input").focus(); }; h.append(b); } box.append(h); }
+  return box;
+}
+function renderChat() {
+  const lastIdx = chat.msgs.findLastIndex((m) => m.role === "assistant");
+  $("chat-log").replaceChildren(...chat.msgs.map((m, i) => msgNode(m, i, i === lastIdx)));
+  $("chat-log").scrollTop = $("chat-log").scrollHeight;
+}
+// One tool button under a partner message: translate / rule / hints. Keeps the result on the message.
+async function ask(btn, m, action, field) {
+  if (btn.disabled) return; btn.disabled = true; btn.setAttribute("aria-busy", "true");
+  try {
+    const data = await callChat({ action, text: m.content, messages: history() });
+    m[field] = field === "hints" ? data.hints : data.reply; saveChat(); renderChat();
+  } catch (e) { toast("Болмады: " + e.message, true); btn.disabled = false; btn.removeAttribute("aria-busy"); }
+}
+let chatBusy = false;
+$("chat-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const text = $("chat-input").value.trim();
+  if (!text || chatBusy) return;
+  const slash = parseSlash(text);
+  if (slash?.error) return toast(slash.error, true);
+  const subject = slash && (slash.text || lastPartner());
+  if (slash && !subject) return toast("Алдымен бір хабарлама керек.", true);
+  chatBusy = true; $("chat-input").value = ""; $("chat-send").disabled = true;
+  const typing = el("div", "bubble muted", "…"); typing.setAttribute("aria-label", "Жауап жазылып жатыр");
+  const entry = slash ? { role: "cmd", content: text, reply: "" } : { role: "user", content: text };
+  chat.msgs.push(entry); renderChat(); $("chat-log").append(typing); $("chat-log").scrollTop = $("chat-log").scrollHeight;
+  try {
+    const data = await callChat(slash ? { action: slash.action, text: subject, messages: history() } : { persona: chat.p.id, messages: history() });
+    if (slash) entry.reply = data.reply; else chat.msgs.push({ role: "assistant", content: data.reply });
+    saveChat();
+  } catch (err) {
+    chat.msgs.pop(); $("chat-input").value = text; toast("Жауап келмеді: " + err.message, true); // the text goes back so the history never ends with two learner turns
+  }
+  chatBusy = false; $("chat-send").disabled = false; renderChat();
+};
 
 /* ---------- profile ---------- */
 $("goal-form").onsubmit = async (e) => {
