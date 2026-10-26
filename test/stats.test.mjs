@@ -1,7 +1,7 @@
 // Run: node --test test/stats.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { streaks, weekOf, addDays, dayKey } from "../stats.js";
+import { streaks, weekOf, addDays, dayKey, xpOf } from "../stats.js";
 
 test("streaks: current survives an unfinished today, best is the longest run", () => {
   assert.deepEqual(streaks(["2026-10-18", "2026-10-19"], "2026-10-20"), { current: 2, best: 2 });
@@ -17,4 +17,10 @@ test("week starts on Monday; day keys follow the time zone", () => {
   assert.equal(weekOf("2026-10-25")[0], "2026-10-19");
   assert.equal(addDays("2026-12-31", 1), "2027-01-01");
   assert.equal(dayKey(new Date("2026-10-19T19:30:00Z"), "Asia/Qostanay"), "2026-10-20"); // 00:30 local is the next day
+});
+
+test("xpOf: answer 2, knew +3, new word learned +5", () => {
+  assert.equal(xpOf({ reviews: 1, knew: 1, new_words: 1 }), 10);
+  assert.equal(xpOf({ reviews: 3, knew: 1, new_words: 0 }), 9);
+  assert.equal(xpOf(undefined), 0);
 });

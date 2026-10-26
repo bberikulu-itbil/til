@@ -1,7 +1,7 @@
 // Run: node --test test/dict.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord } from "../dict.js";
+import { boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "../dict.js";
 
 const w = (word, extra = {}) => ({ id: word, data: { word, translation: "аударма", ...extra } });
 const words = [
@@ -49,4 +49,24 @@ test("pickWord accepts 1-4 English words and rejects the rest", () => {
   assert.equal(pickWord("42"), null);
   assert.equal(pickWord(""), null);
   assert.equal(pickWord(null), null);
+});
+
+test("levelMap counts learned words (box 4+) per level and finds the highest level in use", () => {
+  const m = levelMap([w("a", { level: "A1", srs: { box: 4 } }), w("b", { level: "A1" }), w("c", { level: "B1", srs: { box: 5 } }), w("d", { level: "B2", srs: { box: 3 } }), w("e")]);
+  assert.deepEqual(m.rows.map((r) => [r.level, r.learned, r.total]), [["A1", 1, 2], ["A2", 0, 0], ["B1", 1, 1], ["B2", 0, 1], ["C1", 0, 0], ["C2", 0, 0]]);
+  assert.equal(m.now, "B1");
+  assert.equal(levelMap([w("x", { level: "A1" })]).now, null);
+});
+
+test("wordOfDay is stable within a day, ignores words added today, and handles empty lists", () => {
+  const tz = "Asia/Qostanay";
+  const old = Array.from({ length: 20 }, (_, i) => ({ id: "w" + i, created_at: "2026-10-01T00:00:00Z", data: { word: "w" + i, translation: "т" } }));
+  const fresh = { id: "new", created_at: "2026-10-27T03:00:00Z", data: { word: "new", translation: "т" } };
+  const a = wordOfDay(old, "2026-10-27", tz);
+  assert.equal(wordOfDay([...old, fresh], "2026-10-27", tz).id, a.id);
+  assert.equal(wordOfDay([...old].reverse(), "2026-10-27", tz).id, a.id);
+  assert.equal(new Set(Array.from({ length: 10 }, (_, i) => wordOfDay(old, "2026-10-" + (10 + i), tz).id)).size > 1, true);
+  assert.equal(wordOfDay([fresh], "2026-10-27", tz).id, "new"); // first day: falls back to everything
+  assert.equal(wordOfDay([{ ...fresh, data: { word: "x" } }], "2026-10-27", tz), null);
+  assert.equal(wordOfDay([], "2026-10-27", tz), null);
 });

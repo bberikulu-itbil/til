@@ -1,3 +1,6 @@
+import { LEARNED_BOX } from "./srs.js";
+import { dayKey } from "./stats.js";
+
 // Pure helpers for the dictionary view: Leitner box of a word, filters, CSV export, picking a word out of selected text.
 export const BOXES = 5;
 export const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
@@ -50,4 +53,27 @@ const WORD = "[A-Za-z]+(?:['’-][A-Za-z]+)*";
 export function pickWord(text) {
   const t = String(text ?? "").replace(/\s+/g, " ").trim().replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, "");
   return t.length <= 40 && new RegExp(`^${WORD}(?: ${WORD}){0,3}$`).test(t) ? t : null;
+}
+
+// Level map: per CEFR level how many dictionary words are learned (box 4+, two weeks between reviews).
+// `now` = the highest level with at least one learned word, or null. Words without a level are not counted.
+export function levelMap(words) {
+  const rows = LEVELS.map((level) => {
+    const own = words.filter((w) => w.data.level === level);
+    return { level, total: own.length, learned: own.filter((w) => (w.data.srs?.box ?? 0) >= LEARNED_BOX).length };
+  });
+  const now = rows.findLast((r) => r.learned > 0)?.level ?? null;
+  return { rows, now };
+}
+
+// Word of the day: same word all day for everyone; picked from words added before today so adding one mid-day does not change it.
+// shortcut: falls back to all words on the first day (a word added that day can change it); store the pick if that matters.
+export function wordOfDay(words, today, timeZone) {
+  const usable = words.filter((w) => w.data.translation).sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+  const older = usable.filter((w) => dayKey(new Date(w.created_at), timeZone) < today);
+  const pool = older.length ? older : usable;
+  if (!pool.length) return null;
+  let h = 0;
+  for (const c of today) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return pool[h % pool.length];
 }

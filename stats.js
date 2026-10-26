@@ -25,3 +25,5 @@ export function weekOf(today) {
   const dow = (new Date(today + "T00:00:00Z").getUTCDay() + 6) % 7; // 0 = Monday
   return Array.from({ length: 7 }, (_, i) => addDays(today, i - dow));
 }
+// XP per day row {reviews, knew, new_words}: every answer 2, a "knew" +3, a new word learned +5 (a new word known at once = 10).
+export const xpOf = (row) => (row ? row.reviews * 2 + row.knew * 3 + row.new_words * 5 : 0);

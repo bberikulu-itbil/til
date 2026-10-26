@@ -87,6 +87,15 @@ html, body { height: 100%; }
         <p>Бастапқы жинақты қос: емтиханға керек 20 жиі сөз. Кейін өз сөздеріңді Сөздік бөлімінен немесе Hub ассистенті арқылы қосасың.</p>
         <button id="add-starter" class="btn" type="button">20 сөзді қосу</button>
       </div>
+      <section id="wod" class="card stack" aria-labelledby="wod-h" hidden>
+        <h2 id="wod-h" class="eyebrow">Күн сөзі</h2>
+        <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+          <span id="wod-word" class="prompt t-xl" lang="en"></span>
+          <button id="wod-say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></button>
+        </div>
+        <b id="wod-tr"></b>
+        <span id="wod-ex" class="muted" lang="en"></span>
+      </section>
       <div id="queues" class="list">
         <button id="go-new" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-plus"/></svg></span><span>Жаңа сөздер<small id="new-line"></small></span><span id="new-badge" class="badge"></span></button>
         <button id="go-review" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-undo"/></svg></span><span>Қайталау<small id="review-line"></small></span><span id="review-badge" class="badge"></span></button>
@@ -98,8 +107,17 @@ html, body { height: 100%; }
         <div class="tiles">
           <div class="tile"><span class="t-sm muted">Қазіргі streak</span><b id="cur-streak">0</b></div>
           <div class="tile"><span class="t-sm muted">Ең ұзақ streak</span><b id="best-streak">0</b></div>
+          <div class="tile"><span class="t-sm muted">Бүгінгі XP</span><b id="xp-today">0</b></div>
+          <div class="tile"><span class="t-sm muted">Барлық XP</span><b id="xp-total">0</b></div>
         </div>
+        <div class="bar" role="img" id="xp-bar-wrap"><i id="xp-bar" style="width:0"></i></div>
+        <p class="t-xs muted">Жауап +2 XP, «Білемін» +3, жаңа сөз үйрену +5. Күнделікті мақсат: жаңа сөз саны × 10 XP.</p>
         <p id="today-line" class="t-sm muted"></p>
+      </section>
+      <section id="levels" class="card stack" aria-labelledby="lvl-h" hidden>
+        <h2 id="lvl-h" class="eyebrow">Деңгей картасы</h2>
+        <div id="level-map" class="level"></div>
+        <p id="level-line" class="t-sm muted"></p>
       </section>
     </div>
   </main>
@@ -214,9 +232,9 @@ html, body { height: 100%; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
 import { review, queue, INTERVALS } from "./srs.js";
-import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord } from "./dict.js";
+import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
-import { dayKey, addDays, streaks, weekOf } from "./stats.js";
+import { dayKey, addDays, streaks, weekOf, xpOf } from "./stats.js";
 
 // Same Supabase project as Life Hub; both sites live on bberikulu-itbil.github.io, so the sign-in is shared.
 const sb = supabase.createClient("https://lcmnkcpkbkrktediyvpo.supabase.co", "sb_publishable_Z0BZxemzhkUPo_lfgxMAbA_9TkVXL2q");
@@ -328,6 +346,22 @@ function renderToday() {
   $("best-streak").textContent = `${best} күн`;
   $("streak-chip").hidden = !current; $("streak-chip-n").textContent = current;
   $("streak-chip").setAttribute("aria-label", `Streak: ${current} күн`);
+  const xp = xpOf(todayRow()), xpGoal = (profile?.daily_new_words ?? 7) * 10;
+  $("xp-today").textContent = xp; $("xp-total").textContent = daily.reduce((n, d) => n + xpOf(d), 0);
+  $("xp-bar").style.width = Math.min(100, Math.round((xp / xpGoal) * 100)) + "%";
+  $("xp-bar-wrap").setAttribute("aria-label", `Бүгінгі XP: ${xp} / ${xpGoal}`);
+  const wod = wordOfDay(words, today(), tz());
+  $("wod").hidden = !wod;
+  if (wod) { $("wod-word").textContent = wod.data.word; $("wod-tr").textContent = wod.data.translation; $("wod-ex").textContent = wod.data.example || ""; $("wod-ex").hidden = !wod.data.example; }
+  const lm = levelMap(words), counted = lm.rows.reduce((n, r) => n + r.total, 0);
+  $("levels").hidden = !counted;
+  $("level-map").replaceChildren(...lm.rows.map((r) => {
+    const cell = el("div", (r.total && r.learned === r.total ? "done" : "") + (r.level === lm.now ? " now" : ""));
+    cell.append(el("i"), el("span", "", r.level), el("small", "t-xs muted", r.total ? `${r.learned}/${r.total}` : "—"));
+    cell.firstChild.style.setProperty("--p", r.total ? Math.round((r.learned / r.total) * 100) + "%" : "0%");
+    return cell;
+  }));
+  $("level-line").textContent = lm.now ? `Қазіргі деңгейің: ${lm.now}. Үйренілді деп 4-қорапқа жеткен сөз саналады.` : "Деңгей картасы сөз 4-қорапқа жеткенде толады.";
   const r = todayRow().reviews;
   $("today-line").textContent = r ? `Бүгін ${r} рет жауап бердің.` : current ? "Бүгін әлі оқымадың: streak-ті сақтау үшін бір карточка жеткілікті." : "Бір карточкадан бастасаң, streak басталады.";
 }
@@ -342,6 +376,7 @@ $("add-starter").onclick = async () => {
   } catch (e) { toast("Жинақ қосылмады: " + e.message, true); }
   $("add-starter").removeAttribute("aria-busy");
 };
+$("wod-say").onclick = () => speak($("wod-word").textContent);
 $("go-new").onclick = () => startSession("new");
 $("go-review").onclick = () => startSession("review");
 $("go-mixed").onclick = () => startSession("mixed");

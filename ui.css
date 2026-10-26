@@ -74,8 +74,9 @@ textarea.input { min-height: 160px; resize: vertical; line-height: var(--lh-base
 .tile { background: var(--surface-2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
 .tile b { display: block; font: 600 var(--fs-xl)/var(--lh-xl) var(--font-display); font-variant-numeric: tabular-nums; }
 .level { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-1); text-align: center; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
-.level i { display: block; height: 8px; border-radius: 4px; background: var(--surface-2); margin-bottom: var(--space-1); }
-.level .done i { background: var(--accent); } .level .now { color: var(--text); } .level .now i { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; }
+.level i { display: block; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--accent) var(--p, 0%), var(--surface-2) 0); margin-bottom: var(--space-1); }
+.level small { display: block; }
+.level .done i { background: var(--accent); } .level .now { color: var(--text); } .level .now i { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Goal hero (S02) */
 .goal { background: var(--accent); color: var(--on-accent); border-radius: var(--radius-lg); padding: var(--space-5); display: grid; gap: var(--space-4); }
