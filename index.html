@@ -32,6 +32,10 @@ html, body { height: 100%; }
 @media (max-width: 520px) { .add { grid-template-columns: 1fr; } }
 .dots { display: flex; gap: 3px; } .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); } .dots i.on { background: var(--accent); }
 .small-input { max-width: 120px; }
+.add-box summary { font-weight: 600; cursor: pointer; } .add-box[open] summary { margin-bottom: var(--space-3); }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+.pick { position: fixed; z-index: 30; box-shadow: var(--shadow-pop); }
+.pick[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -46,7 +50,8 @@ html, body { height: 100%; }
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></symbol>
     <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/></symbol>
-    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></symbol>
     <symbol id="i-flame" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z"/></symbol>
@@ -79,7 +84,7 @@ html, body { height: 100%; }
     <div id="today-body" class="stack" hidden>
       <div id="no-words" class="card empty" hidden>
         <h2 class="t-lg">Сөздік әзірге бос</h2>
-        <p>Бастапқы жинақты қос: емтиханға керек 20 жиі сөз. Кейін өз сөздеріңді Сөздер бөлімінен немесе Hub ассистенті арқылы қосасың.</p>
+        <p>Бастапқы жинақты қос: емтиханға керек 20 жиі сөз. Кейін өз сөздеріңді Сөздік бөлімінен немесе Hub ассистенті арқылы қосасың.</p>
         <button id="add-starter" class="btn" type="button">20 сөзді қосу</button>
       </div>
       <div id="queues" class="list">
@@ -102,7 +107,7 @@ html, body { height: 100%; }
   <!-- S05 Card session -->
   <main id="session" class="view gutter session" hidden>
     <div class="session-head">
-      <button id="back" class="icon-btn" type="button" aria-label="Бүгін бетіне оралу"><svg width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <button id="back" class="icon-btn" type="button" aria-label="Артқа"><svg width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
       <div class="segmented" role="tablist" aria-label="Кезек">
         <button id="tab-new" role="tab" type="button" aria-selected="true">Жаңа</button>
         <button id="tab-review" role="tab" type="button" aria-selected="false">Қайталау <span id="tab-review-n" class="badge"></span></button>
@@ -142,31 +147,44 @@ html, body { height: 100%; }
       <div class="row" style="justify-content:center">
         <button id="done-more" class="btn secondary" type="button" hidden>Тағы 5 жаңа сөз</button>
         <button id="done-switch" class="btn secondary" type="button" hidden></button>
-        <button id="done-home" class="btn" type="button">Бүгін бетіне</button>
+        <button id="done-home" class="btn" type="button">Басты бетке</button>
       </div>
     </div>
   </main>
 
-  <!-- S08 Words (v1: own words + starter pack; categories come in milestone 2) -->
+  <!-- S08 Dictionary: Leitner boxes, filters, flashcards, CSV export -->
   <main id="words" class="view gutter" hidden>
-    <h1 class="t-xl">Сөздер</h1>
-    <form id="add" class="add">
+    <h1 class="t-xl">Сөздік</h1>
+    <section class="stack" aria-label="Қораптар">
+      <div id="boxes" class="segmented" role="group" aria-label="Қорап бойынша сүзу"></div>
+      <p id="box-hint" class="t-sm muted"></p>
+    </section>
+    <details class="card add-box"><summary>Сөз қосу</summary>
+      <form id="add" class="add">
       <div class="field"><label for="new-word">Ағылшынша сөз</label><input id="new-word" class="input" lang="en" autocomplete="off" required></div>
       <div class="field"><label for="new-tr">Аудармасы (бос қалса, ЖИ толтырады)</label><input id="new-tr" class="input" autocomplete="off"></div>
       <button id="add-btn" class="btn" type="submit">Қосу</button>
     </form>
-    <input id="search" class="input" type="search" placeholder="Іздеу…" aria-label="Сөздіктен іздеу">
+    </details>
+    <div class="filters">
+      <input id="search" class="input" type="search" placeholder="Іздеу…" aria-label="Сөздіктен іздеу">
+      <select id="level" class="input" aria-label="Деңгей бойынша сүзу"></select>
+    </div>
+    <div class="row">
+      <button id="study" class="btn" type="button"><svg width="20" height="20" aria-hidden="true"><use href="#i-cards"/></svg><span id="study-label">Карточкамен жаттау</span></button>
+      <button id="export" class="btn secondary" type="button"><svg width="20" height="20" aria-hidden="true"><use href="#i-download"/></svg>CSV сақтау</button>
+    </div>
     <ul id="word-list" class="list word-list" style="list-style:none;margin:0;padding:0"></ul>
   </main>
 
   <main id="practice" class="view gutter" hidden>
     <h1 class="t-xl">Жаттығу</h1>
-    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Writing Task 2: таймер, сөз санағы және ЖИ-дің band бағасы. Сосын Speaking бөлімдері мен тьютор.</p></div>
+    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Ойындар: сөз сәйкестендіру, жылдам сұрақ-жауап, сөйлем құрастыру, есту арқылы жазу. Сосын IELTS пен ҰБТ тапсырмалары, Writing Task 2 ЖИ бағасымен.</p></div>
   </main>
 
-  <main id="progress-view" class="view gutter" hidden>
-    <h1 class="t-xl">Прогресс</h1>
-    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Апта, ай, 3 ай бойынша статистика, деңгей A1–C2 және дағдылар бойынша band. Streak қазір Бүгін бетінде.</p></div>
+  <main id="chats" class="view gutter" hidden>
+    <h1 class="t-xl">Чат</h1>
+    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">ЖИ сұхбаттары: Baymax, IELTS Examiner, Native Speaker және Grammar Guru. Әр хабарламаға аудио, аударма, грамматика талдауы және жауап кеңестері.</p></div>
   </main>
 
   <main id="profile" class="view gutter" hidden>
@@ -182,18 +200,20 @@ html, body { height: 100%; }
   </main>
 
   <nav id="tabbar" class="tabbar" aria-label="Негізгі мәзір" hidden>
-    <button type="button" data-view="today"><svg width="22" height="22" aria-hidden="true"><use href="#i-cards"/></svg>Бүгін</button>
-    <button type="button" data-view="words"><svg width="22" height="22" aria-hidden="true"><use href="#i-book"/></svg>Сөздер</button>
+    <button type="button" data-view="today"><svg width="22" height="22" aria-hidden="true"><use href="#i-cards"/></svg>Басты бет</button>
+    <button type="button" data-view="words"><svg width="22" height="22" aria-hidden="true"><use href="#i-book"/></svg>Сөздік</button>
     <button type="button" data-view="practice"><svg width="22" height="22" aria-hidden="true"><use href="#i-pen"/></svg>Жаттығу</button>
-    <button type="button" data-view="progress-view"><svg width="22" height="22" aria-hidden="true"><use href="#i-chart"/></svg>Прогресс</button>
+    <button type="button" data-view="chats"><svg width="22" height="22" aria-hidden="true"><use href="#i-chat"/></svg>Чат</button>
     <button type="button" data-view="profile"><svg width="22" height="22" aria-hidden="true"><use href="#i-user"/></svg>Профиль</button>
   </nav>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
+<button id="pick" class="btn sm pick" type="button" hidden><svg width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg>Сөздікке қосу</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
-import { review, queue } from "./srs.js";
+import { review, queue, INTERVALS } from "./srs.js";
+import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
 import { dayKey, addDays, streaks, weekOf } from "./stats.js";
 
@@ -204,6 +224,7 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 const DAY_NAMES = ["Дс", "Сс", "Ср", "Бс", "Жм", "Сб", "Жс"];
 
 let profile = null, words = [], daily = [], view = "today";
+let wordFilter = { level: null, box: null }; // dictionary filters; the search text is read from the input
 let session = null; // { kind, todo, pos, history }
 let busy = false, extraNew = 0;
 
@@ -270,7 +291,8 @@ function buildQueue(kind) {
 /* ---------- views ---------- */
 function show(next) {
   view = next;
-  for (const v of ["login", "today", "session", "words", "practice", "progress-view", "profile"]) $(v).hidden = v !== next;
+  for (const v of ["login", "today", "session", "words", "practice", "chats", "profile"]) $(v).hidden = v !== next;
+  if (next !== "login") updatePick();
   $("tabbar").hidden = next === "login" || next === "session";
   for (const b of $("tabbar").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
   if (next === "today" && profile) renderToday(); // before the first load the skeleton stays
@@ -324,17 +346,20 @@ $("go-review").onclick = () => startSession("review");
 $("go-mixed").onclick = () => startSession("mixed");
 
 /* ---------- S05 session ---------- */
-function startSession(kind) {
-  session = { kind, todo: buildQueue(kind), pos: 0, history: [], goalAtStart: todayRow().new_words };
+// kind: "new" | "review" | "mixed" for the Home queues, "list" = flashcards over `list` (the filtered dictionary).
+function startSession(kind, list) {
+  const todo = list ? list.map((w) => ({ w, queue: w.data.srs ? "review" : "new" })) : buildQueue(kind);
+  session = { kind, todo, pos: 0, history: [], goalAtStart: todayRow().new_words, from: kind === "list" ? "words" : "today" };
   $("tab-new").setAttribute("aria-selected", String(kind === "new"));
   $("tab-review").setAttribute("aria-selected", String(kind === "review"));
+  $("done-home").textContent = kind === "list" ? "Сөздікке" : "Басты бетке";
   $("undo").disabled = true;
   show("session");
   renderCard();
 }
 $("tab-new").onclick = () => startSession("new");
 $("tab-review").onclick = () => startSession("review");
-$("back").onclick = () => show("today");
+$("back").onclick = () => show(session?.from || "today");
 
 function renderProgress() {
   const s = session, total = s.todo.length;
@@ -370,18 +395,21 @@ function renderDone() {
   $("done-more").hidden = !(s.kind === "new" && fresh > 0);
   if (s.kind === "new") {
     $("done-title").textContent = fresh ? "Бүгінгі жаңа сөздер бітті" : "Жаңа сөз қалмады";
-    $("done-text").textContent = fresh ? "Мақсат орындалды. Қаласаң, тағы бірнеше сөз алуға болады." : "Сөздер бөлімінен жаңа сөз қос немесе Hub ассистентіне жаз.";
+    $("done-text").textContent = fresh ? "Мақсат орындалды. Қаласаң, тағы бірнеше сөз алуға болады." : "Сөздік бөлімінен жаңа сөз қос немесе Hub ассистентіне жаз.";
+  } else if (s.kind === "list") {
+    $("done-title").textContent = "Карточкалар бітті";
+    $("done-text").textContent = "Жауаптарың қораптарға сақталды.";
   } else {
     $("done-title").textContent = "Қайталау бітті";
     $("done-text").textContent = "Келесі сөздер уақыты келгенде осында шығады.";
   }
-  const other = s.kind === "new" ? (due ? "review" : null) : (newLeft() && fresh ? "new" : null);
+  const other = s.kind === "list" ? null : s.kind === "new" ? (due ? "review" : null) : (newLeft() && fresh ? "new" : null);
   $("done-switch").hidden = !other;
   $("done-switch").textContent = other === "review" ? `Қайталауға өту (${due})` : "Жаңа сөздерге өту";
   $("done-switch").onclick = () => startSession(other);
 }
 $("done-more").onclick = () => { extraNew += 5; startSession("new"); };
-$("done-home").onclick = () => show("today");
+$("done-home").onclick = () => show(session?.from || "today");
 $("say").onclick = () => speak(session?.todo[session.pos]?.w.data.word);
 $("h-reveal").onclick = () => {
   $("answer").hidden = false; $("h-reveal").setAttribute("aria-pressed", "true");
@@ -464,16 +492,39 @@ document.addEventListener("keydown", (e) => {
   if (e.key === " " && !$("card-area").hidden) { e.preventDefault(); $("h-reveal").click(); }
 });
 
-/* ---------- S08 words ---------- */
+/* ---------- S08 dictionary ---------- */
+const filtered = () => filterWords(words, { q: $("search").value, ...wordFilter });
 function renderWords() {
-  const q = $("search").value.trim().toLowerCase();
-  const shown = q ? words.filter((w) => `${w.data.word} ${w.data.translation}`.toLowerCase().includes(q)) : words;
-  if (!shown.length) return $("word-list").replaceChildren(el("li", "empty", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос немесе Бүгін бетінен бастапқы жинақты ал."));
+  // Box filter: all, new, then the five Leitner boxes with their counts.
+  const counts = boxCounts(words);
+  const chips = [["Барлығы", null, words.length], ["Жаңа", 0, counts[0]], ...Array.from({ length: BOXES }, (_, i) => [`${i + 1}-қорап`, i + 1, counts[i + 1]])];
+  $("boxes").replaceChildren(...chips.map(([label, box, n]) => {
+    const b = el("button", "", `${label} ${n}`); b.type = "button";
+    b.setAttribute("aria-pressed", String(wordFilter.box === box));
+    b.onclick = () => { wordFilter.box = box; renderWords(); };
+    return b;
+  }));
+  const b = wordFilter.box;
+  $("box-hint").textContent = b === null ? "Сөз дұрыс жауап бергенде келесі қорапқа өтеді, қателессе басына қайтады."
+    : b === 0 ? "Бұл сөздер әлі қайталауға түскен жоқ."
+    : `${b}-қорап: сөз ${INTERVALS[b]} күннен кейін қайталанады.`;
+  // Level filter lists only the levels that occur in the dictionary.
+  const levels = levelsOf(words);
+  if (wordFilter.level && !levels.includes(wordFilter.level)) wordFilter.level = null;
+  $("level").replaceChildren(...[["", "Барлық деңгей"], ...levels.map((l) => [l, l])].map(([v, t]) => Object.assign(el("option", "", t), { value: v })));
+  $("level").value = wordFilter.level || "";
+  $("level").hidden = !levels.length;
+
+  const shown = filtered();
+  $("study-label").textContent = `Карточкамен жаттау (${shown.length})`;
+  $("study").disabled = $("export").disabled = !shown.length;
+  if (!shown.length) return $("word-list").replaceChildren(el("li", "empty", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос немесе Басты беттен бастапқы жинақты ал."));
   $("word-list").replaceChildren(...shown.map((w) => {
     const li = el("li", "list-row");
-    const text = el("span"); text.append(el("span", "", w.data.word), el("small", "", w.data.translation || ""));
-    const dots = el("span", "dots"); dots.setAttribute("aria-label", `Кезең ${w.data.srs?.box ?? 0} / 6`);
-    for (let i = 1; i <= 6; i++) dots.append(el("i", i <= (w.data.srs?.box ?? 0) ? "on" : ""));
+    const text = el("span"); text.append(el("span", "", w.data.word), el("small", "", [w.data.translation, w.data.level].filter(Boolean).join(" · ")));
+    const box = boxOf(w.data.srs);
+    const dots = el("span", "dots"); dots.setAttribute("aria-label", box ? `${box}-қорап` : "Жаңа сөз");
+    for (let i = 1; i <= BOXES; i++) dots.append(el("i", i <= box ? "on" : ""));
     const say = el("button", "icon-btn"); say.type = "button"; say.setAttribute("aria-label", `${w.data.word}: тыңдау`);
     say.innerHTML = '<svg width="18" height="18" aria-hidden="true"><use href="#i-speaker"/></svg>';
     say.onclick = () => speak(w.data.word);
@@ -482,11 +533,21 @@ function renderWords() {
   }));
 }
 $("search").oninput = renderWords;
-$("add").onsubmit = async (e) => {
-  e.preventDefault();
-  const word = $("new-word").value.trim(), translation = $("new-tr").value.trim();
-  if (!word) return;
-  $("add-btn").setAttribute("aria-busy", "true"); $("add-btn").disabled = true;
+$("level").onchange = () => { wordFilter.level = $("level").value || null; renderWords(); };
+$("study").onclick = () => { const list = filtered(); if (list.length) startSession("list", list); };
+$("export").onclick = () => {
+  const list = filtered();
+  if (!list.length) return;
+  const a = el("a"); // BOM first so Excel reads the Kazakh letters as UTF-8
+  a.href = URL.createObjectURL(new Blob(["﻿", toCsv(list)], { type: "text/csv;charset=utf-8" }));
+  a.download = `sozdik-${today()}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast(`${list.length} сөз сақталды.`);
+};
+
+// Adds one word. Without a translation the Hub assistant translates and saves it. Returns true on success.
+async function addWord(word, translation) {
+  if (words.some((w) => w.data.word.toLowerCase() === word.toLowerCase())) { toast(`«${word}» сөздікте бар.`); return false; }
   let error;
   if (translation) {
     ({ error } = await sb.from("items").insert({ app: "lang", data: { word, translation, source: "manual" } }));
@@ -498,11 +559,40 @@ $("add").onsubmit = async (e) => {
     error = res.error || (res.data?.actions?.some((a) => a.tool === "add_word" && a.ok) ? null : { message: res.data?.reply || "ЖИ сөзді сақтамады" });
     if (res.error) { try { error = { message: (await res.error.context.json()).error }; } catch { /* keep it */ } }
   }
-  $("add-btn").removeAttribute("aria-busy"); $("add-btn").disabled = false;
-  if (error) return toast("Қосылмады: " + error.message, true);
+  if (error) { toast("Қосылмады: " + error.message, true); return false; }
   toast(`«${word}» қосылды.`);
-  $("new-word").value = ""; $("new-tr").value = "";
-  await loadWords(); renderWords();
+  try { await loadWords(); } catch (e) { toast("Тізім жаңартылмады: " + e.message, true); }
+  if (view === "words") renderWords(); else if (view === "today") renderToday();
+  return true;
+}
+$("add").onsubmit = async (e) => {
+  e.preventDefault();
+  const word = $("new-word").value.trim(), translation = $("new-tr").value.trim();
+  if (!word) return;
+  $("add-btn").setAttribute("aria-busy", "true"); $("add-btn").disabled = true;
+  const ok = await addWord(word, translation);
+  $("add-btn").removeAttribute("aria-busy"); $("add-btn").disabled = false;
+  if (ok) { $("new-word").value = ""; $("new-tr").value = ""; }
+};
+
+/* ---------- select text anywhere -> "add to dictionary" ---------- */
+let picked = null, pickTimer;
+function updatePick() {
+  const sel = getSelection(), btn = $("pick");
+  const inField = sel?.anchorNode?.parentElement?.closest("input, textarea, select");
+  picked = view !== "login" && sel && !sel.isCollapsed && !inField ? pickWord(sel.toString()) : null;
+  btn.hidden = !picked;
+  if (!picked) return;
+  const r = sel.getRangeAt(0).getBoundingClientRect(); // below the selection: phones show their own menu above it
+  btn.style.top = Math.min(r.bottom + 8, innerHeight - 120) + "px";
+  btn.style.left = Math.max(8, Math.min(r.left, innerWidth - btn.offsetWidth - 8)) + "px";
+}
+document.addEventListener("selectionchange", () => { clearTimeout(pickTimer); pickTimer = setTimeout(updatePick, 250); });
+$("pick").onmousedown = (e) => e.preventDefault(); // keep the selection while pressing
+$("pick").onclick = async () => {
+  const word = picked;
+  $("pick").hidden = true; getSelection().removeAllRanges();
+  if (word) await addWord(word, "");
 };
 
 /* ---------- profile ---------- */

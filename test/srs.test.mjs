@@ -8,11 +8,12 @@ const DAY = 864e5, now = 1_800_000_000_000;
 test("review moves boxes and schedules the next date", () => {
   assert.deepEqual(review(undefined, 2, now), { box: 1, due: now + DAY, seen: 1 });
   assert.deepEqual(review({ box: 3, seen: 4 }, 2, now), { box: 4, due: now + 14 * DAY, seen: 5 });
-  assert.deepEqual(review({ box: 6 }, 2, now).box, 6); // stays in the last box
+  assert.deepEqual(review({ box: 5 }, 2, now), { box: 5, due: now + 30 * DAY, seen: 1 }); // stays in the last box
+  assert.equal(review({ box: 6 }, 2, now).box, 5); // words saved when there were 6 boxes
   assert.deepEqual(review({ box: 3 }, 1, now), { box: 3, due: now + 7 * DAY, seen: 1 });
   assert.deepEqual(review(undefined, 1, now).box, 1);
   assert.deepEqual(review({ box: 5 }, 0, now), { box: 0, due: now + 600_000, seen: 1 });
-  assert.equal(INTERVALS.length, 7);
+  assert.equal(INTERVALS.length, 6); // box 0 + five Leitner boxes
 });
 
 test("queue puts overdue words first and caps new ones", () => {

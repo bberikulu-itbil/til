@@ -1,5 +1,5 @@
 // Spaced repetition with Leitner boxes: a recalled word moves up a box and waits longer; a forgotten one starts over.
-export const INTERVALS = [0, 1, 3, 7, 14, 30, 90]; // days a word waits in each box
+export const INTERVALS = [0, 1, 3, 7, 14, 30]; // days a word waits in boxes 1..5 (box 0 = just forgotten, retry in 10 minutes)
 export const LEARNED_BOX = 4; // two weeks between reviews counts as learned
 const DAY = 864e5;
 
