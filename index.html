@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="kk">
+<html lang="kk" data-app="sozdik">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Тіл</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Golos+Text:wght@400;500;600;700&display=swap">
+<meta name="theme-color" content="#0a7586">
+<link rel="icon" href="brand/logos/sozdik.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/logos/sozdik-180.png">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="ui.css">
 <style>
@@ -16,7 +16,7 @@ html, body { height: 100%; }
 .gutter { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
 .top { flex: none; min-height: var(--header); display: flex; align-items: center; gap: var(--space-3); padding-top: env(safe-area-inset-top, 0px); }
 .brand { font: 600 var(--fs-lg)/var(--lh-lg) var(--font-display); display: flex; align-items: center; gap: var(--space-2); }
-.brand::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+.brand img { width: 28px; height: 28px; border-radius: 8px; }
 .top .spacer { flex: 1; }
 .hub { color: var(--accent); text-decoration: none; font-weight: 500; font-size: var(--fs-sm); padding: var(--space-2); }
 .view { flex: 1; min-height: 0; overflow-y: auto; padding-block: var(--space-2) var(--space-6); display: grid; grid-auto-rows: max-content; gap: var(--space-5); align-content: start; } /* tracks keep their content height when the view scrolls */
@@ -60,7 +60,7 @@ html, body { height: 100%; }
 
 <div class="app">
   <header class="top gutter">
-    <span class="brand">Тіл</span>
+    <span class="brand"><img src="brand/logos/sozdik.svg" alt="">Тіл</span>
     <span class="spacer"></span>
     <span id="streak-chip" class="chip streak-chip" hidden><svg width="16" height="16" aria-hidden="true"><use href="#i-flame"/></svg><span id="streak-chip-n"></span></span>
     <a class="hub" href="../life-hub/">Hub</a>

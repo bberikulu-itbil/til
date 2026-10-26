@@ -1,4 +1,8 @@
 /* Тіл primitives. Every value comes from tokens.css; specs in replica/design/components.md. */
+/* Liquid Glass: coloured blobs (from data-app) behind translucent, blurred surfaces. */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: radial-gradient(60% 40% at 12% 8%, var(--blob1), transparent 70%), radial-gradient(55% 40% at 95% 38%, var(--blob2), transparent 70%), radial-gradient(60% 45% at 25% 100%, var(--blob3), transparent 70%); }
+.card, .list, .tabbar, .input, .btn.secondary, .icon-btn, .segmented, .flash, .toast, .pick { -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.card, .list, .flash, .tabbar { background-image: var(--sheen); border-color: var(--gb); box-shadow: var(--shadow-glass); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text); font: var(--fw-base) var(--fs-base)/var(--lh-base) var(--font-sans); -webkit-text-size-adjust: 100%; }
@@ -17,6 +21,8 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 600; margi
 
 /* Button */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); border: 1px solid transparent; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--on-accent); transition: filter var(--dur-fast); }
+.btn { box-shadow: var(--shadow-primary); }
+.btn.secondary, .btn.ghost, .btn:disabled { box-shadow: none; }
 .btn:hover { filter: brightness(1.06); }
 .btn:active { filter: brightness(.94); }
 .btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
@@ -122,13 +128,13 @@ textarea.input { min-height: 160px; resize: vertical; line-height: var(--lh-base
 /* Feedback states */
 .empty { text-align: center; display: grid; gap: var(--space-3); justify-items: center; padding: var(--space-7) var(--space-4); color: var(--text-muted); }
 .empty h3 { color: var(--text); }
-.toast { position: fixed; left: 50%; bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px) + var(--space-4)); transform: translateX(-50%); max-width: calc(100% - 32px); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--text); color: var(--bg); box-shadow: var(--shadow-pop); font-size: var(--fs-sm); z-index: 20; }
+.toast { position: fixed; left: 50%; bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px) + var(--space-6)); transform: translateX(-50%); max-width: calc(100% - 32px); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--text); color: var(--bg); box-shadow: var(--shadow-pop); font-size: var(--fs-sm); z-index: 20; }
 .toast.error { background: var(--danger); color: var(--on-status); }
 .skeleton { background: var(--surface-2); border-radius: var(--radius-sm); min-height: 16px; animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .55; } }
 
 /* Tab bar */
-.tabbar { position: sticky; bottom: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface); border-top: 1px solid var(--border); padding: var(--space-1) max(var(--space-2), env(safe-area-inset-right, 0px)) calc(var(--space-1) + env(safe-area-inset-bottom, 0px)) max(var(--space-2), env(safe-area-inset-left, 0px)); }
+.tabbar { position: sticky; bottom: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; margin: 0 var(--space-3) var(--space-2); border: 1px solid var(--gb); border-radius: var(--r-nav); background-color: var(--surface); padding: var(--space-1) max(var(--space-2), env(safe-area-inset-right, 0px)) calc(var(--space-1) + env(safe-area-inset-bottom, 0px)) max(var(--space-2), env(safe-area-inset-left, 0px)); }
 .tabbar button { display: grid; justify-items: center; gap: 2px; min-height: 48px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-muted); font-size: var(--fs-xs); font-weight: 500; cursor: pointer; padding: var(--space-1); }
 .tabbar button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
 
