@@ -34,6 +34,15 @@ html, body { height: 100%; }
 .small-input { max-width: 120px; }
 .add-box summary { font-weight: 600; cursor: pointer; } .add-box[open] summary { margin-bottom: var(--space-3); }
 .filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+#game .prompt, #wod .prompt { font: 600 var(--fs-xl)/var(--lh-xl) var(--font-display); }
+.pair-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.pair-grid button, .chips button { min-height: 48px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; overflow-wrap: anywhere; }
+.pair-grid button[aria-pressed="true"], .chips button.sel { border-color: var(--accent); background: var(--accent-soft); }
+.pair-grid button.right, .choices button.right { border-color: var(--success); color: var(--success); }
+.pair-grid button.wrong { border-color: var(--danger); color: var(--danger); }
+.pair-grid button:disabled { opacity: .55; cursor: default; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); min-height: 56px; align-content: flex-start; }
+.chips.answer-line { border-bottom: 2px solid var(--border); padding-bottom: var(--space-3); }
 .pick { position: fixed; z-index: 30; box-shadow: var(--shadow-pop); }
 .pick[hidden] { display: none; }
 </style>
@@ -198,7 +207,23 @@ html, body { height: 100%; }
 
   <main id="practice" class="view gutter" hidden>
     <h1 class="t-xl">Жаттығу</h1>
-    <div class="card stub"><h2 class="t-lg">Келесі кезеңде</h2><p class="muted">Ойындар: сөз сәйкестендіру, жылдам сұрақ-жауап, сөйлем құрастыру, есту арқылы жазу. Сосын IELTS пен ҰБТ тапсырмалары, Writing Task 2 ЖИ бағасымен.</p></div>
+    <div id="practice-menu" class="stack">
+      <div class="list">
+        <button class="list-row" type="button" data-game="match"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-grid"/></svg></span><span>Сөз сәйкестендіру<small>5 жұпты уақытқа тап</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="list-row" type="button" data-game="quiz"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-flame"/></svg></span><span>Жылдам сұрақ-жауап<small>60 секундта көбірек жауап бер</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="list-row" type="button" data-game="sentence"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-pen"/></svg></span><span>Сөйлем құрастыру<small>Сөздерден дұрыс сөйлем жина</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="list-row" type="button" data-game="spelling"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></span><span>Есту арқылы жазу<small>Тыңдап, сөзді қатесіз жаз</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      </div>
+      <p id="practice-note" class="t-sm muted">Ойындар сөздігіңдегі сөздермен жүреді. Нәтиже қораптарға әсер етпейді: қайталау Басты беттегі карточкалармен ғана.</p>
+    </div>
+    <section id="game" class="stack" hidden>
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+        <button id="game-back" class="icon-btn" type="button" aria-label="Ойындар тізіміне"><svg width="20" height="20" aria-hidden="true"><use href="#i-back"/></svg></button>
+        <b id="game-title"></b>
+        <span id="game-status" class="chip" role="timer" aria-live="off"></span>
+      </div>
+      <div id="game-body" class="stack"></div>
+    </section>
   </main>
 
   <main id="chats" class="view gutter" hidden>
@@ -232,6 +257,7 @@ html, body { height: 100%; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
 import { review, queue, INTERVALS } from "./srs.js";
+import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk } from "./practice.js";
 import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
 import { dayKey, addDays, streaks, weekOf, xpOf } from "./stats.js";
@@ -316,6 +342,7 @@ function show(next) {
   for (const b of $("tabbar").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
   if (next === "today" && profile) renderToday(); // before the first load the skeleton stays
   if (next === "words") renderWords();
+  if (next === "practice") endGame();
   if (next === "profile") { $("goal").value = profile?.daily_new_words ?? 7; }
 }
 for (const b of $("tabbar").children) b.onclick = () => show(b.dataset.view);
@@ -658,6 +685,128 @@ $("pick").onclick = async () => {
   if (words.some((w) => w.data.word.toLowerCase() === word.toLowerCase())) return toast(`«${word}» сөздікте бар.`);
   await suggest(word);
 };
+
+/* ---------- Practice: four games over the dictionary ---------- */
+let game = null; // { stop() } while a game runs
+function endGame() { game?.stop?.(); game = null; $("game").hidden = true; $("practice-menu").hidden = false; }
+function openGame(title, status = "") { $("practice-menu").hidden = true; $("game").hidden = false; $("game-title").textContent = title; $("game-status").textContent = status; $("game-status").hidden = !status; return $("game-body"); }
+function gameDone(title, text) {
+  game?.stop?.();
+  const box = $("game-body"), kind = game.kind, again = el("button", "btn", "Қайта ойнау"); again.type = "button";
+  again.onclick = () => document.querySelector(`[data-game="${kind}"]`).click();
+  game = { kind };
+  const menu = el("button", "btn secondary", "Ойындарға"); menu.type = "button"; menu.onclick = endGame;
+  box.replaceChildren(el("div", "card empty", null)); box.firstChild.append(el("h2", "t-lg", title), el("p", "", text), Object.assign(el("div", "row"), { style: "justify-content:center" }));
+  box.firstChild.lastChild.append(again, menu);
+  $("game-status").hidden = true;
+}
+function needWords(n, what) { toast(`${what}: сөздікте кемінде ${n} сөз керек.`, true); }
+$("game-back").onclick = endGame;
+for (const b of document.querySelectorAll("[data-game]")) b.onclick = () => ({ match: playMatch, quiz: playQuiz, sentence: playSentence, spelling: playSpelling })[b.dataset.game]();
+
+function playMatch() {
+  const set = matchSet(words, 5);
+  if (set.left.length < 3) return needWords(3, "Сәйкестендіру");
+  const body = openGame("Сөз сәйкестендіру"), t0 = Date.now(); let mistakes = 0, left = set.left.length, sel = null;
+  game = { kind: "match", stop() { clearInterval(this.timer); } };
+  game.timer = setInterval(() => ($("game-status").textContent = Math.floor((Date.now() - t0) / 1000) + " с"), 500);
+  $("game-status").hidden = false; $("game-status").textContent = "0 с";
+  const grid = el("div", "pair-grid"), btn = (w, side) => { const b = el("button", "", side === "l" ? w.data.word : w.data.translation); b.type = "button"; b.dataset.id = w.id; b.dataset.side = side; if (side === "l") b.lang = "en"; return b; };
+  const cells = [];
+  for (let i = 0; i < set.left.length; i++) cells.push(btn(set.left[i], "l"), btn(set.right[i], "r"));
+  grid.append(...cells); body.replaceChildren(grid);
+  grid.onclick = (e) => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    if (b.dataset.side === "l") speak(b.textContent);
+    if (!sel || sel.dataset.side === b.dataset.side) { sel?.setAttribute("aria-pressed", "false"); sel = b; b.setAttribute("aria-pressed", "true"); return; }
+    const pair = [sel, b]; sel.setAttribute("aria-pressed", "false"); sel = null;
+    if (pair[0].dataset.id === pair[1].dataset.id) {
+      for (const p of pair) { p.classList.add("right"); p.disabled = true; }
+      if (!--left) gameDone("Бітті", `${Math.round((Date.now() - t0) / 1000)} секунд, қате: ${mistakes}.`);
+    } else {
+      mistakes++;
+      for (const p of pair) p.classList.add("wrong");
+      setTimeout(() => { for (const p of pair) p.classList.remove("wrong"); }, 500);
+    }
+  };
+}
+
+function playQuiz() {
+  if (!quizQuestion(words)) return needWords(4, "Сұрақ-жауап (әртүрлі аудармасы бар)");
+  const body = openGame("Жылдам сұрақ-жауап"); let score = 0, wrong = 0, left = 60, locked = false;
+  game = { kind: "quiz", stop() { clearInterval(this.timer); } };
+  const tick = () => ($("game-status").textContent = `${left} с · ${score}`);
+  $("game-status").hidden = false; tick();
+  game.timer = setInterval(() => { if (--left <= 0) gameDone("Уақыт бітті", `Дұрыс: ${score}, қате: ${wrong}.`); else tick(); }, 1000);
+  const next = () => {
+    const q = quizQuestion(words); locked = false;
+    const word = el("span", "prompt t-xl", q.word); word.lang = "en"; const say = el("button", "icon-btn"); say.type = "button"; say.setAttribute("aria-label", "Айтылуын тыңдау"); say.innerHTML = '<svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg>'; say.onclick = () => speak(q.word);
+    const head = el("div", "row"); head.style.justifyContent = "space-between"; head.append(word, say);
+    const choices = el("div", "choices");
+    for (const o of q.options) {
+      const b = el("button", "", o); b.type = "button";
+      b.onclick = () => {
+        if (locked) return; locked = true;
+        const ok = o === q.answer; ok ? score++ : wrong++; tick();
+        b.classList.add(ok ? "right" : "wrong"); if (!ok) [...choices.children].find((c) => c.textContent === q.answer).classList.add("right");
+        setTimeout(() => game?.kind === "quiz" && game.timer && next(), ok ? 250 : 700);
+      };
+      choices.append(b);
+    }
+    body.replaceChildren(head, choices);
+  };
+  next();
+}
+
+function playSentence() {
+  if (!sentenceRound(words)) return needWords(1, "Сөйлем құрастыру (мысал сөйлемі бар)");
+  const body = openGame("Сөйлем құрастыру", "1 / 5"); let n = 0, right = 0;
+  game = { kind: "sentence" };
+  const round = () => {
+    const r = sentenceRound(words), built = [], pool = r.tokens.map((t, i) => ({ t, i, used: false }));
+    $("game-status").textContent = `${n + 1} / 5`; $("game-status").hidden = false;
+    const hint = el("p", "muted", `Сөз: ${r.word} (${r.translation})`), line = el("div", "chips answer-line"), bank = el("div", "chips"), msg = el("p", "t-sm", ""), check = el("button", "btn", "Тексеру"); check.type = "button"; check.disabled = true;
+    line.lang = bank.lang = "en";
+    const draw = () => {
+      line.replaceChildren(...built.map((p) => Object.assign(el("button", "sel", p.t), { type: "button", onclick: () => { p.used = false; built.splice(built.indexOf(p), 1); draw(); } })));
+      bank.replaceChildren(...pool.filter((p) => !p.used).map((p) => Object.assign(el("button", "", p.t), { type: "button", onclick: () => { p.used = true; built.push(p); draw(); } })));
+      check.disabled = built.length !== pool.length;
+    };
+    check.onclick = () => {
+      const ok = sentenceOk(built.map((p) => p.t), r.sentence);
+      if (ok) right++;
+      line.replaceChildren(...[el("span", "", r.sentence)]); bank.replaceChildren(); check.hidden = true;
+      msg.textContent = ok ? "Дұрыс!" : "Дұрыс жауап жоғарыда. Сенің нұсқаң: " + built.map((p) => p.t).join(" "); msg.style.color = ok ? "var(--success)" : "var(--danger)";
+      const go = el("button", "btn", ++n >= 5 ? "Нәтиже" : "Келесі"); go.type = "button"; go.onclick = () => (n >= 5 ? gameDone("Бітті", `Дұрыс сөйлем: ${right} / 5.`) : round());
+      body.append(go);
+    };
+    draw(); body.replaceChildren(hint, line, bank, msg, check);
+  };
+  round();
+}
+
+function playSpelling() {
+  if (!words.some((w) => w.data.word)) return needWords(1, "Жазу");
+  const body = openGame("Есту арқылы жазу", "1 / 5"); let n = 0, right = 0;
+  game = { kind: "spelling" };
+  const round = () => {
+    const w = words[Math.floor(Math.random() * words.length)].data;
+    $("game-status").textContent = `${n + 1} / 5`; $("game-status").hidden = false;
+    const say = el("button", "btn secondary", "Қайта тыңдау"); say.type = "button"; say.onclick = () => speak(w.word);
+    const form = el("form", "stack"), input = el("input", "input"), msg = el("p", "t-sm", ""), ok = el("button", "btn", "Тексеру");
+    input.setAttribute("aria-label", "Естігенің"); input.lang = "en"; input.autocomplete = "off"; input.autocapitalize = "none"; input.spellcheck = false; input.required = true; ok.type = "submit";
+    form.append(input, ok, msg);
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const good = spellingOk(input.value, w.word); if (good) right++;
+      input.disabled = ok.hidden = true;
+      msg.textContent = good ? `Дұрыс: ${w.word}` : `Қате. Дұрысы: ${w.word} (${w.translation || "—"})`; msg.style.color = good ? "var(--success)" : "var(--danger)";
+      const go = el("button", "btn", ++n >= 5 ? "Нәтиже" : "Келесі"); go.type = "button"; go.onclick = () => (n >= 5 ? gameDone("Бітті", `Дұрыс жазылған: ${right} / 5.`) : round()); form.append(go); go.focus();
+    };
+    body.replaceChildren(say, form); speak(w.word); input.focus();
+  };
+  round();
+}
 
 /* ---------- profile ---------- */
 $("goal-form").onsubmit = async (e) => {
