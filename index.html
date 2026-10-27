@@ -2,7 +2,8 @@
 <html lang="kk" data-app="sozdik">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<script>addEventListener('gesturestart', e => e.preventDefault()); // iOS Safari user-scalable=no-ды елемейді: екі саусақпен үлкейтуді тоқтатамыз</script>
 <title>Тіл</title>
 <meta name="theme-color" content="#0a7586">
 <link rel="icon" href="brand/logos/sozdik.svg" type="image/svg+xml">
@@ -11,7 +12,7 @@
 <link rel="stylesheet" href="ui.css">
 <style>
 /* App shell only: one-screen layout, header on top, tab bar at the bottom. Components live in ui.css. */
-html, body { height: 100%; }
+html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иілмейді, тек .view жылжиды */
 .app { height: 100%; max-width: var(--max-width); margin: 0 auto; display: flex; flex-direction: column; }
 .gutter { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
 .top { flex: none; min-height: var(--header); display: flex; align-items: center; gap: var(--space-3); padding-top: env(safe-area-inset-top, 0px); }
