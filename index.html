@@ -9,7 +9,7 @@
 <link rel="icon" href="brand/logos/sozdik.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/logos/sozdik-180.png">
 <link rel="stylesheet" href="tokens.css">
-<link rel="stylesheet" href="ui.css?v=20261124b">
+<link rel="stylesheet" href="ui.css?v=20261124c">
 <style>
 /* App shell only: one-screen layout, header on top, tab bar at the bottom. Components live in ui.css. */
 html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иілмейді, тек .view жылжиды */
@@ -25,7 +25,11 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 .session-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
 .session .segmented { justify-self: center; }
 .session .deck { flex: none; }
-.flash .answer b { font-size: var(--fs-lg); }
+.flash .answer b { font-size: var(--fs-xl); line-height: var(--lh-xl); }
+.flash .answer { font-size: var(--fs-lg); line-height: var(--lh-lg); }
+.flash .prompt { font-size: 40px; line-height: 46px; }
+.flash .pos { font-size: var(--fs-sm); padding: 4px 12px 4px 8px; }
+.flash .pos svg { width: 18px; height: 18px; }
 .streak-chip { color: var(--warning); }
 .stub { display: grid; gap: var(--space-3); }
 .word-list li { grid-template-columns: minmax(0, 1fr) auto auto auto; gap: var(--space-1) var(--space-2); cursor: default; }
@@ -285,14 +289,30 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 
   <main id="profile" class="view gutter" hidden>
     <h1 class="t-xl">Профиль</h1>
+    <section class="card stack">
+      <div class="who-row"><span id="ava" class="ava" aria-hidden="true"></span><div><b id="who-name" class="t-lg"></b><p id="who" class="t-sm muted"></p></div><span id="lvl" class="chip"></span></div>
+      <div class="bar" role="img" id="lvl-bar-wrap"><i id="lvl-bar" style="width:0"></i></div>
+      <p id="lvl-text" class="t-sm muted"></p>
+    </section>
+    <div class="tiles tiles3">
+      <div class="tile"><span class="t-sm muted">Streak</span><b id="p-streak">0</b></div>
+      <div class="tile"><span class="t-sm muted">Үйренген сөз</span><b id="p-learned">0</b></div>
+      <div class="tile"><span class="t-sm muted">Барлық сөз</span><b id="p-words">0</b></div>
+    </div>
+    <section class="card stack" aria-labelledby="pw-h">
+      <div class="row" style="justify-content:space-between"><h2 id="pw-h" class="eyebrow">Осы аптадағы XP</h2><span id="p-week-xp" class="t-sm muted"></span></div>
+      <div id="p-bars" class="xpbars"></div>
+    </section>
+    <section class="card stack" aria-labelledby="ach-h">
+      <div class="row" style="justify-content:space-between"><h2 id="ach-h" class="eyebrow">Жетістіктер</h2><span id="ach-n" class="t-sm muted"></span></div>
+      <div id="ach" class="ach"></div>
+    </section>
     <form id="goal-form" class="card stack">
-      <div class="field"><label for="goal">Күніне жаңа сөз</label><input id="goal" class="input small-input" type="number" min="1" max="50" inputmode="numeric" required></div>
+      <h2 class="eyebrow">Күндік мақсат</h2>
+      <div class="field"><label for="goal">Күніне жаңа сөз <span id="goal-xp" class="muted"></span></label><input id="goal" class="input small-input" type="number" min="1" max="50" inputmode="numeric" required></div>
       <button class="btn secondary" type="submit" style="justify-self:start">Сақтау</button>
     </form>
-    <div class="card stack">
-      <p id="who" class="muted"></p>
-      <button id="logout" class="btn secondary" type="button" style="justify-self:start">Шығу</button>
-    </div>
+    <button id="logout" class="btn secondary block" type="button">Шығу</button>
   </main>
 
   <nav id="tabbar" class="tabbar" aria-label="Негізгі мәзір" hidden>
@@ -308,7 +328,7 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script type="module">
-import { review, queue, INTERVALS } from "./srs.js";
+import { review, queue, INTERVALS, LEARNED_BOX } from "./srs.js";
 import { parseSlash } from "./chat.js";
 import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk, ESSAY_TOPICS, wordCount } from "./practice.js";
 import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay, LANGS, POS, normPos, meaningOf, exampleIn, needsEnrich, mergeEnrich, wikiThumb } from "./dict.js";
@@ -344,6 +364,34 @@ function speak(text) {
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
 /* ---------- card content: language, part of speech, picture ---------- */
+const LEVEL_XP = 250; // one level per 250 XP
+const ACH = [
+  ["7 күн қатар", "i-flame", (m) => m.best >= 7], ["30 күн қатар", "i-flame", (m) => m.best >= 30],
+  ["50 сөз қосылды", "i-book", (m) => m.words >= 50], ["100 сөз қосылды", "i-book", (m) => m.words >= 100],
+  ["25 сөз үйренілді", "i-cards", (m) => m.learned >= 25], ["1000 XP", "i-plus", (m) => m.xp >= 1000],
+];
+function renderProfile() {
+  const email = $("who").textContent, name = email.split("@")[0] || "Қолданушы";
+  const active = daily.filter((d) => d.reviews > 0).map((d) => d.day), { current, best } = streaks(active, today());
+  const xp = daily.reduce((n, d) => n + xpOf(d), 0), lvl = Math.floor(xp / LEVEL_XP) + 1, into = xp % LEVEL_XP;
+  const m = { best, xp, words: words.length, learned: words.filter((w) => (w.data.srs?.box ?? 0) >= LEARNED_BOX).length };
+  $("ava").textContent = name[0]?.toUpperCase() ?? "Т"; $("who-name").textContent = name;
+  $("lvl").textContent = `${lvl}-деңгей`; $("lvl-bar").style.width = `${into / LEVEL_XP * 100}%`;
+  $("lvl-text").textContent = `${xp} XP · ${lvl + 1}-деңгейге ${LEVEL_XP - into} XP қалды`;
+  $("p-streak").textContent = `${current} күн`; $("p-learned").textContent = m.learned; $("p-words").textContent = m.words;
+  const week = weekOf(today()).map((d) => xpOf(daily.find((r) => r.day === d))), top = Math.max(...week, 1);
+  $("p-week-xp").textContent = `${week.reduce((a, b) => a + b, 0)} XP`;
+  $("p-bars").replaceChildren(...week.map((v, i) => {
+    const c = el("span", "xpbar"), f = el("i"); f.style.height = `${Math.max(v / top * 100, 6)}%`; f.dataset.on = v > 0;
+    c.append(f, el("small", "", DAY_NAMES[i])); c.setAttribute("aria-label", `${DAY_NAMES[i]}: ${v} XP`); return c;
+  }));
+  $("ach").replaceChildren(...ACH.map(([t, icon, ok]) => {
+    const on = ok(m), c = el("span", "ach-item" + (on ? " on" : "")); c.insertAdjacentHTML("afterbegin", `<span class="ach-ico"><svg width="22" height="22" aria-hidden="true"><use href="#${icon}"/></svg></span>`);
+    c.append(el("small", "", t)); c.setAttribute("aria-label", `${t}: ${on ? "алынды" : "әлі жоқ"}`); return c;
+  }));
+  $("ach-n").textContent = `${ACH.filter(([, , ok]) => ok(m)).length} / ${ACH.length}`;
+  $("goal").value = profile?.daily_new_words ?? 7; $("goal-xp").textContent = `(= ${(profile?.daily_new_words ?? 7) * 10} XP)`;
+}
 const meaning = (d) => meaningOf(d, lang) || d.translation || ""; // falls back to Kazakh until the card is filled
 function posChip(node, key, icon = true) {
   const pos = normPos(key);
@@ -467,7 +515,7 @@ function show(next) {
   if (next === "words") renderWords();
   if (next === "practice") endGame();
   if (next === "chats") renderPersonas();
-  if (next === "profile") { $("goal").value = profile?.daily_new_words ?? 7; }
+  if (next === "profile") renderProfile();
 }
 for (const b of $("tabbar").children) b.onclick = () => show(b.dataset.view);
 

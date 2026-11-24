@@ -159,3 +159,23 @@ span > .pos { margin-inline-start: var(--space-2); }
 .auth .segmented { width: 100%; } .auth .segmented button { flex: 1; }
 .auth .stack, .auth .btn.block { width: 100%; }
 .input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px var(--surface) inset; -webkit-text-fill-color: var(--text); }
+
+/* Bigger flashcard */
+.flash { padding: var(--space-6) var(--space-5); gap: var(--space-5); min-height: 440px; }
+.flash .card-img { max-height: 220px; }
+.helpers button { min-height: 76px; font-size: var(--fs-sm); }
+.flash .answer { gap: var(--space-2); }
+/* Profile */
+.who-row { display: flex; align-items: center; gap: var(--space-3); } .who-row > div { flex: 1; min-width: 0; } .who-row p { margin: 0; overflow: hidden; text-overflow: ellipsis; }
+.ava { width: 56px; height: 56px; border-radius: 20px; display: grid; place-items: center; font: 700 24px/1 var(--font-display); background: var(--accent); color: var(--on-accent); flex: none; }
+.tiles3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); text-align: center; }
+.tiles3 .tile b { font-size: var(--fs-lg); line-height: var(--lh-lg); }
+.xpbars { display: flex; align-items: flex-end; gap: var(--space-2); height: 120px; }
+.xpbar { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: var(--space-1); }
+.xpbar i { width: 100%; border-radius: var(--radius-sm); background: var(--surface-2); } .xpbar i[data-on="true"] { background: var(--accent); }
+.xpbar small { font-size: var(--fs-xs); color: var(--text-muted); }
+.ach { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); text-align: center; }
+.ach-item { display: grid; justify-items: center; gap: var(--space-1); opacity: .5; } .ach-item.on { opacity: 1; }
+.ach-ico { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-muted); }
+.ach-item.on .ach-ico { background: var(--accent); color: var(--on-accent); }
+.ach-item small { font-size: var(--fs-xs); line-height: var(--lh-xs); }
