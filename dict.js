@@ -77,3 +77,38 @@ export function wordOfDay(words, today, timeZone) {
   for (const c of today) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return pool[h % pool.length];
 }
+
+// ---- Card content in four languages: part of speech, meaning, example ----
+export const LANGS = [["kk", "Қазақша"], ["ru", "Русский"], ["en", "English"], ["tr", "Türkçe"]];
+export const POS = { noun: "Зат есім", verb: "Етістік", adjective: "Сын есім", adverb: "Үстеу", other: "Басқа" };
+const POS_ALIAS = { n: "noun", v: "verb", adj: "adjective", adv: "adverb" };
+// "Noun", "adj." ... -> one of POS keys; empty -> null; anything else (preposition, pronoun...) -> "other".
+export function normPos(p) {
+  const s = String(p ?? "").trim().toLowerCase().replace(/\.$/, "");
+  if (!s) return null;
+  const k = POS_ALIAS[s] || s;
+  return Object.hasOwn(POS, k) ? k : "other";
+}
+
+// Meaning in the chosen language. "en" is a short English definition. A word added by hand only has `translation` (Kazakh).
+export function meaningOf(d, lang) {
+  if (lang === "kk") return d.translation || d.tr?.kk || "";
+  return d.tr?.[lang] || "";
+}
+// Example sentence translated into the chosen language ("" for English: the sentence itself is shown).
+export const exampleIn = (d, lang) => (lang === "en" ? "" : d.ex?.[lang] || "");
+
+// A card still has gaps if it has no part of speech, a missing meaning, or no example in some language.
+export const needsEnrich = (d) => !d.pos || ["kk", "ru", "en", "tr"].some((l) => !meaningOf(d, l)) || !d.example || ["kk", "ru", "tr"].some((l) => !d.ex?.[l]);
+
+// AI result `e` ({pos, tr:{kk,ru,tr,en}, ex:{en,kk,ru,tr}}) -> new data. Never overwrites what the learner or an earlier run already has.
+export function mergeEnrich(d, e) {
+  const tr = { ...e.tr, ...d.tr }, ex = { kk: e.ex.kk, ru: e.ex.ru, tr: e.ex.tr, ...d.ex };
+  return { ...d, pos: d.pos || e.pos, translation: d.translation || e.tr.kk, example: d.example || e.ex.en, tr, ex };
+}
+
+// Wikipedia page summary -> thumbnail url, only for a real article whose title is the word itself (not a disambiguation page).
+export function wikiThumb(summary, word) {
+  const ok = summary?.type === "standard" && summary.thumbnail?.source && String(summary.title ?? "").toLowerCase() === String(word).toLowerCase();
+  return ok ? summary.thumbnail.source : null;
+}

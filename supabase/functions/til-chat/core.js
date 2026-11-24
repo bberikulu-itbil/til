@@ -14,6 +14,7 @@ const ACTIONS = {
   rule: "Analyse the English text for a learner. In Kazakh, list at most 5 short lines, one per grammar item: the tense or structure used, and why it is used there. No introduction.",
   explain: "Explain the English word or phrase in simple Kazakh: meaning, how it is used, and one short English example with its Kazakh translation.",
   essay: 'You are a careful IELTS Writing Task 2 examiner. The learner is a Kazakh speaker. Estimate bands (0-9, steps of 0.5) for Task Response (tr), Coherence and Cohesion (cc), Lexical Resource (lr) and Grammatical Range and Accuracy (gra), plus the overall band. Be realistic, not generous. Then write ONE tip in simple Kazakh (max 40 words): quote the most important mistake in English, give the fix, and say what to improve next. Output ONLY JSON: {"band":6.5,"tr":6.5,"cc":6,"lr":7,"gra":6.5,"tip":"..."}',
+  enrich: 'You prepare a vocabulary flashcard for a Kazakh learner of English. Input: an English word, and sometimes the learner\'s Kazakh meaning and an example sentence: keep that sense. Output ONLY JSON: {"pos":"noun|verb|adjective|adverb|other","kk":"short Kazakh meaning","ru":"short Russian meaning","tr":"short Turkish meaning","en":"simple English definition, max 15 words","ex":{"en":"one natural example sentence, B1 level (use the given one if there is one)","kk":"its Kazakh translation","ru":"its Russian translation","tr":"its Turkish translation"}}. Meanings are 1-3 words that fit the sense of the example.',
   hint: 'Suggest 3 different short replies (4-15 words) that the learner could say next in this English conversation: one simple, one longer, one that asks a question back. Output ONLY a JSON array of 3 strings, nothing else.',
 };
 export const isAction = (a) => Object.hasOwn(ACTIONS, a);
@@ -29,7 +30,7 @@ export function cleanHistory(messages) {
 }
 
 // Messages for one model call; null when the request is not valid.
-export function buildMessages({ persona, action, text, messages, topic }) {
+export function buildMessages({ persona, action, text, messages, topic, context: note }) {
   if (!action || action === "chat") {
     const p = PERSONAS[persona], history = cleanHistory(messages);
     return p && history.at(-1)?.role === "user" ? [{ role: "system", content: p.system }, ...history] : null;
@@ -37,6 +38,7 @@ export function buildMessages({ persona, action, text, messages, topic }) {
   if (!isAction(action)) return null;
   const t = cleanText(text, action === "essay" ? 3000 : 1500);
   if (!t) return null;
+  if (action === "enrich") return t.length <= 60 ? [{ role: "system", content: ACTIONS.enrich }, { role: "user", content: note ? `Word: ${t}\n${cleanText(note, 300)}` : `Word: ${t}` }] : null;
   if (action === "essay") return topic ? [{ role: "system", content: ACTIONS.essay }, { role: "user", content: `Topic: ${cleanText(topic, 300)}\n\nEssay:\n${t}` }] : null;
   const context = action === "hint" ? cleanHistory(messages).slice(-6).map((m) => `${m.role === "user" ? "Learner" : "Partner"}: ${m.content}`).join("\n") : "";
   return [{ role: "system", content: ACTIONS[action] }, { role: "user", content: context ? `Conversation so far:\n${context}\n\nPartner's last message:\n${t}` : t }];
@@ -69,6 +71,21 @@ export function parseEssay(text) {
   } catch { return null; }
 }
 
+// Model's JSON -> { pos, tr:{kk,ru,tr,en}, ex:{en,kk,ru,tr} }; every text must be a non-empty string, else null.
+const POS_KEYS = ["noun", "verb", "adjective", "adverb"];
+export function parseEnrich(text) {
+  const m = String(text ?? "").match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const o = JSON.parse(m[0]);
+    const s = (v) => (typeof v === "string" && v.trim() ? v.trim().slice(0, 200) : null);
+    const tr = { kk: s(o.kk), ru: s(o.ru), tr: s(o.tr), en: s(o.en) }, ex = { en: s(o.ex?.en), kk: s(o.ex?.kk), ru: s(o.ex?.ru), tr: s(o.ex?.tr) };
+    if (Object.values(tr).some((v) => !v) || Object.values(ex).some((v) => !v)) return null;
+    const pos = String(o.pos ?? "").trim().toLowerCase();
+    return { pos: POS_KEYS.includes(pos) ? pos : "other", tr, ex };
+  } catch { return null; }
+}
+
 export function buildChain(userModels, free) {
   const mine = (Array.isArray(userModels) ? userModels : []).map((m) => String(m).trim()).filter((m) => /^[\w.\-\/:~]{3,100}$/.test(m)).slice(0, 6);
   return [...new Set([...mine, ...free.slice(0, 6)])];
@@ -91,7 +108,7 @@ export async function callOpenRouter(key, chain, messages, fetcher = fetch) {
     const res = await fetcher(`${OPENROUTER}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Title": "Sozdik" },
-      body: JSON.stringify({ models: chain.slice(i, i + 3), messages, max_tokens: 400 }),
+      body: JSON.stringify({ models: chain.slice(i, i + 3), messages, max_tokens: 600 }),
     });
     const body = await res.json().catch(() => ({}));
     const content = String(body.choices?.[0]?.message?.content ?? "").trim();

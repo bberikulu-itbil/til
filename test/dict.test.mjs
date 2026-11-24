@@ -70,3 +70,38 @@ test("wordOfDay is stable within a day, ignores words added today, and handles e
   assert.equal(wordOfDay([{ ...fresh, data: { word: "x" } }], "2026-10-27", tz), null);
   assert.equal(wordOfDay([], "2026-10-27", tz), null);
 });
+
+test("normPos maps aliases, empty -> null, unknown -> other", async () => {
+  const { normPos } = await import("../dict.js");
+  assert.deepEqual(["Noun", "v", " adj. ", "ADVERB", "preposition", "", null].map(normPos), ["noun", "verb", "adjective", "adverb", "other", null, null]);
+});
+
+test("meaning and example follow the language; hand-added words still show Kazakh", async () => {
+  const { meaningOf, exampleIn } = await import("../dict.js");
+  const d = { word: "achieve", translation: "қол жеткізу", example: "She achieved it.", tr: { ru: "достигать", tr: "başarmak", en: "to succeed in doing something" }, ex: { ru: "Она добилась этого.", kk: "Ол соған жетті." } };
+  assert.deepEqual(["kk", "ru", "en", "tr"].map((l) => meaningOf(d, l)), ["қол жеткізу", "достигать", "to succeed in doing something", "başarmak"]);
+  assert.equal(meaningOf({ word: "x" }, "ru"), "");
+  assert.deepEqual(["kk", "ru", "en", "tr"].map((l) => exampleIn(d, l)), ["Ол соған жетті.", "Она добилась этого.", "", ""]);
+});
+
+test("needsEnrich is true until pos, four meanings and the examples are all there", async () => {
+  const { needsEnrich, mergeEnrich } = await import("../dict.js");
+  const e = { pos: "verb", tr: { kk: "жету", ru: "достигать", tr: "başarmak", en: "to succeed" }, ex: { en: "I achieve.", kk: "Мен жетемін.", ru: "Я достигаю.", tr: "Başarırım." } };
+  const old = { word: "achieve", translation: "қол жеткізу", example: "She achieved it.", pos: "noun", ex: { ru: "Моя." } };
+  assert.equal(needsEnrich(old), true);
+  const m = mergeEnrich(old, e);
+  assert.equal(needsEnrich(m), false);
+  assert.deepEqual([m.pos, m.translation, m.example, m.ex.ru, m.ex.kk, m.tr.kk, m.tr.ru], ["noun", "қол жеткізу", "She achieved it.", "Моя.", "Мен жетемін.", "жету", "достигать"]); // learner's data wins
+  assert.equal(mergeEnrich({ word: "x" }, e).translation, "жету"); // empty -> AI fills
+  assert.equal(needsEnrich(mergeEnrich({ word: "x" }, e)), false);
+});
+
+test("wikiThumb accepts a standard article with the same title and a thumbnail only", async () => {
+  const { wikiThumb } = await import("../dict.js");
+  const ok = { type: "standard", title: "Dog", thumbnail: { source: "https://upload.wikimedia.org/dog.jpg" } };
+  assert.equal(wikiThumb(ok, "dog"), "https://upload.wikimedia.org/dog.jpg");
+  assert.equal(wikiThumb({ ...ok, type: "disambiguation" }, "dog"), null);
+  assert.equal(wikiThumb({ ...ok, title: "Hot dog" }, "dog"), null);
+  assert.equal(wikiThumb({ type: "standard", title: "Dog" }, "dog"), null);
+  assert.equal(wikiThumb(null, "dog"), null);
+});

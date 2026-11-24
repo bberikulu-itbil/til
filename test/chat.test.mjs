@@ -79,3 +79,18 @@ test("essay: needs topic and text, long text allowed; parseEssay validates score
   assert.equal(parseEssay('{"band":6,"tr":6,"cc":6,"lr":6,"gra":6}'), null);
   assert.equal(parseEssay("no json"), null);
 });
+
+test("enrich: needs a short word, passes the learner's context; parseEnrich wants every text field", async () => {
+  const { parseEnrich } = await import("../supabase/functions/til-chat/core.js");
+  assert.equal(buildMessages({ action: "enrich", text: " " }), null);
+  assert.equal(buildMessages({ action: "enrich", text: "x".repeat(61) }), null);
+  const m = buildMessages({ action: "enrich", text: "bank", context: "Kazakh: банк. Example: I went to the bank." });
+  assert.equal(m[1].content, "Word: bank\nKazakh: банк. Example: I went to the bank.");
+  assert.equal(buildMessages({ action: "enrich", text: "bank" })[1].content, "Word: bank");
+  const full = { pos: "Verb", kk: "жету", ru: "достигать", tr: "başarmak", en: "to succeed", ex: { en: "I try.", kk: "Мен тырысамын.", ru: "Я пытаюсь.", tr: "Denerim." } };
+  assert.deepEqual(parseEnrich("```json\n" + JSON.stringify({ ...full, pos: "verb" }) + "\n```").pos, "verb");
+  assert.equal(parseEnrich(JSON.stringify({ ...full, pos: "preposition" })).pos, "other");
+  assert.equal(parseEnrich(JSON.stringify({ ...full, ru: "" })), null);
+  assert.equal(parseEnrich(JSON.stringify({ ...full, ex: { en: "x" } })), null);
+  assert.equal(parseEnrich("nope"), null);
+});

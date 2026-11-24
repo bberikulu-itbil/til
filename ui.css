@@ -140,3 +140,13 @@ textarea.input { min-height: 160px; resize: vertical; line-height: var(--lh-base
 .tabbar button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } * { transition-duration: 0s !important; } }
+
+/* Card content: part of speech chip (one icon, colour by part), picture, language picker */
+.pos { --pc: var(--text-muted); display: inline-flex; align-items: center; gap: var(--space-1); width: fit-content; padding: 2px var(--space-2) 2px 6px; border-radius: 99px; font-size: var(--fs-xs); line-height: var(--lh-xs); font-weight: 600; color: color-mix(in srgb, var(--pc) 78%, var(--text)); background: color-mix(in srgb, var(--pc) 14%, transparent); }
+.pos[data-pos="noun"] { --pc: #2a6bd6; } .pos[data-pos="verb"] { --pc: #0e8475; } .pos[data-pos="adjective"] { --pc: #b5470f; } .pos[data-pos="adverb"] { --pc: #8a4fd1; }
+.pos svg { width: 14px; height: 14px; }
+.card-img { width: 100%; max-height: 180px; object-fit: cover; border-radius: var(--radius-md); display: block; background: var(--surface-2); }
+.credit { font-size: var(--fs-xs); color: var(--text-muted); }
+.lang { width: auto; min-height: 36px; padding: 0 var(--space-2); font-size: var(--fs-sm); }
+.answer { gap: var(--space-1); }
+span > .pos { margin-inline-start: var(--space-2); }

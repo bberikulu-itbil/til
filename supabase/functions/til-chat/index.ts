@@ -1,6 +1,6 @@
 // Sozdik chat: persona chat, translate, grammar rule, word explanation, reply hints. Deploy: Supabase → Edge Functions (verify_jwt on).
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
-import { buildChain, buildMessages, callOpenRouter, freeModels, parseEssay, parseHints } from "./core.js";
+import { buildChain, buildMessages, callOpenRouter, freeModels, parseEnrich, parseEssay, parseHints } from "./core.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +32,10 @@ Deno.serve(async (req) => {
   try {
     const chain = buildChain(body.models, await freeModels().catch(() => []));
     const { content, model } = await callOpenRouter(key, chain, messages);
+    if (body.action === "enrich") {
+      const enrich = parseEnrich(content);
+      return enrich ? json({ enrich, model }) : json({ error: "Модель карточканы дұрыс толтырмады, қайта көр." }, 502);
+    }
     if (body.action === "essay") {
       const essay = parseEssay(content);
       return essay ? json({ essay, model }) : json({ error: "Модель бағаны дұрыс бермеді, қайта көр." }, 502);

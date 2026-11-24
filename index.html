@@ -79,6 +79,8 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
     <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></symbol>
     <symbol id="i-flame" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><path d="M7 7h.01"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
   </defs>
 </svg>
 
@@ -86,6 +88,7 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
   <header class="top gutter">
     <span class="brand"><img src="brand/logos/sozdik.svg" alt="">Тіл</span>
     <span class="spacer"></span>
+    <select id="lang" class="input lang" aria-label="Аударма тілі"></select>
     <span id="streak-chip" class="chip streak-chip" hidden><svg width="16" height="16" aria-hidden="true"><use href="#i-flame"/></svg><span id="streak-chip-n"></span></span>
     <a class="hub" href="../life-hub/">Hub</a>
   </header>
@@ -117,8 +120,10 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
           <span id="wod-word" class="prompt t-xl" lang="en"></span>
           <button id="wod-say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></button>
         </div>
+        <span id="wod-pos" class="pos" hidden></span>
         <b id="wod-tr"></b>
         <span id="wod-ex" class="muted" lang="en"></span>
+        <span id="wod-ex2" class="muted"></span>
       </section>
       <div id="queues" class="list">
         <button id="go-new" class="list-row" type="button"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-plus"/></svg></span><span>Жаңа сөздер<small id="new-line"></small></span><span id="new-badge" class="badge"></span></button>
@@ -164,16 +169,23 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
         <article id="flash" class="flash">
           <span class="label again" aria-hidden="true">Тағы</span><span class="label know" aria-hidden="true">Білемін</span>
           <span id="eyebrow" class="eyebrow"></span>
+          <img id="card-img" class="card-img" alt="" hidden>
+          <span id="img-credit" class="credit" hidden></span>
           <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
             <span id="prompt" class="prompt" lang="en"></span>
-            <button id="say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></button>
+            <span class="row" style="flex-wrap:nowrap;gap:var(--space-1)">
+              <button id="img-btn" class="icon-btn" type="button" aria-label="Сурет табу"><svg width="20" height="20" aria-hidden="true"><use href="#i-image"/></svg></button>
+              <button id="say" class="icon-btn" type="button" aria-label="Айтылуын тыңдау"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></button>
+            </span>
           </div>
+          <span id="pos-chip" class="pos" hidden></span>
           <div class="helpers" style="grid-template-columns:repeat(2,minmax(0,1fr))">
             <button id="h-reveal" type="button" aria-pressed="false"><svg width="22" height="22" aria-hidden="true"><use href="#i-eye"/></svg>Аудармасын көрсету</button>
             <button id="h-choose" type="button" aria-pressed="false"><svg width="22" height="22" aria-hidden="true"><use href="#i-grid"/></svg>Нұсқадан таңдау</button>
           </div>
           <div id="choices" class="choices" hidden></div>
-          <div id="answer" class="answer" hidden><b id="translation"></b><span id="example" class="muted" lang="en"></span></div>
+          <div id="answer" class="answer" hidden><b id="translation"></b><span id="example" class="muted" lang="en"></span><span id="example-local" class="muted"></span></div>
+          <p id="card-note" class="t-xs muted" role="status" hidden></p>
         </article>
       </div>
       <div class="grade">
@@ -292,7 +304,7 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 import { review, queue, INTERVALS } from "./srs.js";
 import { parseSlash } from "./chat.js";
 import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk, ESSAY_TOPICS, wordCount } from "./practice.js";
-import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "./dict.js";
+import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay, LANGS, POS, normPos, meaningOf, exampleIn, needsEnrich, mergeEnrich, wikiThumb } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
 import { dayKey, addDays, streaks, weekOf, xpOf } from "./stats.js";
 
@@ -305,6 +317,8 @@ const DAY_NAMES = ["Дс", "Сс", "Ср", "Бс", "Жм", "Сб", "Жс"];
 let profile = null, words = [], daily = [], view = "today";
 let wordFilter = { level: null, box: null }; // dictionary filters; the search text is read from the input
 let session = null; // { kind, todo, pos, history }
+let lang = "kk"; // language of meanings and example translations; English = a short English definition
+try { const l = localStorage.getItem("til.lang"); if (LANGS.some(([k]) => k === l)) lang = l; } catch { /* storage off */ }
 let busy = false, extraNew = 0;
 
 /* ---------- small helpers ---------- */
@@ -322,6 +336,73 @@ function speak(text) {
   u.lang = "en-US"; u.rate = 0.9;
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
+/* ---------- card content: language, part of speech, picture ---------- */
+const meaning = (d) => meaningOf(d, lang) || d.translation || ""; // falls back to Kazakh until the card is filled
+function posChip(node, key, icon = true) {
+  const pos = normPos(key);
+  node.hidden = !pos;
+  if (!pos) return;
+  node.dataset.pos = pos;
+  node.replaceChildren();
+  if (icon) node.insertAdjacentHTML("afterbegin", '<svg aria-hidden="true"><use href="#i-tag"/></svg>');
+  node.append(pos === "other" ? POS.other : `${POS[pos]} · ${pos}`);
+}
+$("lang").replaceChildren(...LANGS.map(([k, t]) => Object.assign(el("option", "", t), { value: k })));
+$("lang").value = lang;
+$("lang").onchange = () => {
+  lang = $("lang").value;
+  try { localStorage.setItem("til.lang", lang); } catch { /* storage off */ }
+  if (!profile) return;
+  if (view === "words") renderWords(); else if (view === "today") renderToday(); else if (view === "session") renderMeaning();
+};
+const note = (text) => { $("card-note").textContent = text; $("card-note").hidden = !text; };
+async function callFn(name, body) {
+  let models = [];
+  try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
+  const res = await sb.functions.invoke(name, { body: { ...body, models } });
+  if (res.error) { let msg = res.error.message; try { msg = (await res.error.context.json()).error; } catch { /* keep it */ } throw new Error(msg); }
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}
+async function saveData(w, data) {
+  const { error } = await sb.from("items").update({ data }).eq("id", w.id);
+  if (error) throw new Error(error.message);
+  w.data = data;
+}
+async function wikiImage(word) {
+  try { const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word)}`); return r.ok ? wikiThumb(await r.json(), word) : null; } catch { return null; }
+}
+const enriching = new Set();
+// Fills the gaps of one card (part of speech, four meanings, examples) once; saved, so a card costs one AI call in its life.
+async function maybeEnrich(w) {
+  if (!needsEnrich(w.data) || enriching.has(w.id)) return;
+  enriching.add(w.id); note("Карточка ЖИ-мен толтырылып жатыр…");
+  try {
+    const d = w.data, hint = [d.translation && `Kazakh: ${d.translation}.`, d.example && `Example: ${d.example}`].filter(Boolean).join(" ");
+    const { enrich } = await callFn("til-chat", { action: "enrich", text: d.word, context: hint });
+    await saveData(w, mergeEnrich(w.data, enrich));
+    if (w.data.pos === "noun" && !w.data.img) { const url = await wikiImage(w.data.word); if (url) await saveData(w, { ...w.data, img: { url, by: "wiki" } }); }
+    note("");
+  } catch (e) { note("ЖИ карточканы толтыра алмады: " + e.message); }
+  finally { enriching.delete(w.id); }
+  if (session?.todo[session.pos]?.w === w) renderMeaning();
+}
+let imgBusy = false;
+$("img-btn").onclick = async () => {
+  const w = session?.todo[session.pos]?.w;
+  if (!w || imgBusy) return;
+  imgBusy = true; $("img-btn").disabled = true; note("Сурет жасалып жатыр…");
+  try {
+    let img = null;
+    if (normPos(w.data.pos) === "noun") { const url = await wikiImage(w.data.word); if (url) img = { url, by: "wiki" }; }
+    if (!img) img = { url: (await callFn("til-image", { word: w.data.word, pos: w.data.pos, en: w.data.tr?.en })).url, by: "ai" };
+    await saveData(w, { ...w.data, img });
+    note("");
+  } catch (e) { note(""); toast(e.message, true); }
+  finally { imgBusy = false; $("img-btn").disabled = false; }
+  if (session?.todo[session.pos]?.w === w) renderMeaning();
+};
+const gw = () => words.map((w) => ({ ...w, data: { ...w.data, translation: meaning(w.data) } })); // words as the games should show them
 const tz = () => profile?.time_zone || "Asia/Qostanay";
 const today = () => dayKey(new Date(), tz());
 const todayRow = () => daily.find((d) => d.day === today()) || { reviews: 0, new_words: 0 };
@@ -414,7 +495,7 @@ function renderToday() {
   $("xp-bar-wrap").setAttribute("aria-label", `Бүгінгі XP: ${xp} / ${xpGoal}`);
   const wod = wordOfDay(words, today(), tz());
   $("wod").hidden = !wod;
-  if (wod) { $("wod-word").textContent = wod.data.word; $("wod-tr").textContent = wod.data.translation; $("wod-ex").textContent = wod.data.example || ""; $("wod-ex").hidden = !wod.data.example; }
+  if (wod) { const d = wod.data; $("wod-word").textContent = d.word; posChip($("wod-pos"), d.pos); $("wod-tr").textContent = meaning(d); $("wod-ex").textContent = d.example || ""; $("wod-ex").hidden = !d.example; $("wod-ex2").textContent = exampleIn(d, lang); $("wod-ex2").hidden = !exampleIn(d, lang); }
   const lm = levelMap(words), counted = lm.rows.reduce((n, r) => n + r.total, 0);
   $("levels").hidden = !counted;
   $("level-map").replaceChildren(...lm.rows.map((r) => {
@@ -472,6 +553,18 @@ function renderProgress() {
   const due = dueWords().length;
   $("tab-review-n").textContent = due; $("tab-review-n").hidden = !due;
 }
+function renderMeaning() {
+  const entry = session.todo[session.pos];
+  if (!entry) return;
+  const d = entry.w.data, local = exampleIn(d, lang);
+  $("translation").textContent = meaning(d) || "—";
+  $("example").textContent = d.example || ""; $("example").hidden = !d.example;
+  $("example-local").textContent = local; $("example-local").hidden = !local;
+  posChip($("pos-chip"), d.pos);
+  $("card-img").hidden = !d.img?.url; if (d.img?.url) $("card-img").src = d.img.url;
+  $("img-credit").hidden = !d.img?.url; $("img-credit").textContent = d.img?.by === "wiki" ? "Сурет: Wikipedia" : "Сурет: ЖИ жасаған";
+  $("img-btn").hidden = !!d.img?.url;
+}
 function renderCard() {
   const s = session, entry = s.todo[s.pos];
   renderProgress();
@@ -481,8 +574,8 @@ function renderCard() {
   const d = entry.w.data;
   $("eyebrow").textContent = [entry.queue === "new" ? "Жаңа сөз" : "Қайталау", d.level, d.category].filter(Boolean).join(" · ");
   $("prompt").textContent = d.word;
-  $("translation").textContent = d.translation || "—";
-  $("example").textContent = d.example || "";
+  renderMeaning();
+  maybeEnrich(entry.w); const next = s.todo[s.pos + 1]; if (next) maybeEnrich(next.w);
   $("answer").hidden = true; $("choices").hidden = true;
   $("h-reveal").setAttribute("aria-pressed", "false"); $("h-choose").setAttribute("aria-pressed", "false");
   $("h-choose").hidden = words.length < 3;
@@ -514,8 +607,8 @@ $("h-reveal").onclick = () => {
   speak(session.todo[session.pos].w.data.word);
 };
 $("h-choose").onclick = () => {
-  const entry = session.todo[session.pos], right = entry.w.data.translation;
-  const others = [...new Set(words.map((w) => w.data.translation).filter((t) => t && t !== right))].sort(() => Math.random() - 0.5).slice(0, 2);
+  const entry = session.todo[session.pos], right = meaning(entry.w.data);
+  const others = [...new Set(words.map((w) => meaning(w.data)).filter((t) => t && t !== right))].sort(() => Math.random() - 0.5).slice(0, 2);
   const options = [right, ...others].sort(() => Math.random() - 0.5);
   entry.mode = "choice";
   $("h-choose").setAttribute("aria-pressed", "true");
@@ -619,7 +712,8 @@ function renderWords() {
   if (!shown.length) return $("word-list").replaceChildren(el("li", "empty", words.length ? "Ештеңе табылмады." : "Сөздік бос. Жоғарыдан алғашқы сөзіңді қос немесе Басты беттен бастапқы жинақты ал."));
   $("word-list").replaceChildren(...shown.map((w) => {
     const li = el("li", "list-row");
-    const text = el("span"); text.append(el("span", "", w.data.word), el("small", "", [w.data.translation, w.data.level].filter(Boolean).join(" · ")));
+    const text = el("span"); const head = el("span", "", w.data.word), pc = el("span", "pos"); posChip(pc, w.data.pos, false); head.append(pc);
+    text.append(head, el("small", "", [meaning(w.data), w.data.level].filter(Boolean).join(" · ")));
     const box = boxOf(w.data.srs);
     const dots = el("span", "dots"); dots.setAttribute("aria-label", box ? `${box}-қорап` : "Жаңа сөз");
     for (let i = 1; i <= BOXES; i++) dots.append(el("i", i <= box ? "on" : ""));
@@ -765,12 +859,9 @@ function playEssay(topicNo = Math.floor(Math.random() * ESSAY_TOPICS.length), dr
   body.replaceChildren(card, ta, count, row);
 }
 async function callEssay(topic, text) {
-  let models = [];
-  try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
-  const res = await sb.functions.invoke("til-chat", { body: { action: "essay", topic, text, models } });
-  if (res.error) { let msg = res.error.message; try { msg = (await res.error.context.json()).error; } catch { /* keep it */ } throw new Error(msg); }
-  if (!res.data?.essay) throw new Error(res.data?.error || "Баға келмеді, қайта көр.");
-  return res.data;
+  const data = await callFn("til-chat", { action: "essay", topic, text });
+  if (!data.essay) throw new Error("Баға келмеді, қайта көр.");
+  return data;
 }
 function showEssay(r, n, again) {
   const card = el("div", "card stack"), head = el("div", "row"), big = el("b", "t-xl", r.band.toFixed(1)), crit = el("div", "criteria");
@@ -787,7 +878,7 @@ function showEssay(r, n, again) {
 }
 
 function playMatch() {
-  const set = matchSet(words, 5);
+  const set = matchSet(gw(), 5);
   if (set.left.length < 3) return needWords(3, "Сәйкестендіру");
   const body = openGame("Сөз сәйкестендіру"), t0 = Date.now(); let mistakes = 0, left = set.left.length, sel = null;
   game = { kind: "match", stop() { clearInterval(this.timer); } };
@@ -814,14 +905,14 @@ function playMatch() {
 }
 
 function playQuiz() {
-  if (!quizQuestion(words)) return needWords(4, "Сұрақ-жауап (әртүрлі аудармасы бар)");
+  if (!quizQuestion(gw())) return needWords(4, "Сұрақ-жауап (әртүрлі аудармасы бар)");
   const body = openGame("Жылдам сұрақ-жауап"); let score = 0, wrong = 0, left = 60, locked = false;
   game = { kind: "quiz", stop() { clearInterval(this.timer); } };
   const tick = () => ($("game-status").textContent = `${left} с · ${score}`);
   $("game-status").hidden = false; tick();
   game.timer = setInterval(() => { if (--left <= 0) gameDone("Уақыт бітті", `Дұрыс: ${score}, қате: ${wrong}.`); else tick(); }, 1000);
   const next = () => {
-    const q = quizQuestion(words); locked = false;
+    const q = quizQuestion(gw()); locked = false;
     const word = el("span", "prompt t-xl", q.word); word.lang = "en"; const say = el("button", "icon-btn"); say.type = "button"; say.setAttribute("aria-label", "Айтылуын тыңдау"); say.innerHTML = '<svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg>'; say.onclick = () => speak(q.word);
     const head = el("div", "row"); head.style.justifyContent = "space-between"; head.append(word, say);
     const choices = el("div", "choices");
@@ -841,11 +932,11 @@ function playQuiz() {
 }
 
 function playSentence() {
-  if (!sentenceRound(words)) return needWords(1, "Сөйлем құрастыру (мысал сөйлемі бар)");
+  if (!sentenceRound(gw())) return needWords(1, "Сөйлем құрастыру (мысал сөйлемі бар)");
   const body = openGame("Сөйлем құрастыру", "1 / 5"); let n = 0, right = 0;
   game = { kind: "sentence" };
   const round = () => {
-    const r = sentenceRound(words), built = [], pool = r.tokens.map((t, i) => ({ t, i, used: false }));
+    const r = sentenceRound(gw()), built = [], pool = r.tokens.map((t, i) => ({ t, i, used: false }));
     $("game-status").textContent = `${n + 1} / 5`; $("game-status").hidden = false;
     const hint = el("p", "muted", `Сөз: ${r.word} (${r.translation})`), line = el("div", "chips answer-line"), bank = el("div", "chips"), msg = el("p", "t-sm", ""), check = el("button", "btn", "Тексеру"); check.type = "button"; check.disabled = true;
     line.lang = bank.lang = "en";
