@@ -150,3 +150,12 @@ textarea.input { min-height: 160px; resize: vertical; line-height: var(--lh-base
 .lang { width: auto; min-height: 36px; padding: 0 var(--space-2); font-size: var(--fs-sm); }
 .answer { gap: var(--space-1); }
 span > .pos { margin-inline-start: var(--space-2); }
+
+/* Login / sign-up */
+.top.signed-out > :not(.brand) { display: none; }
+.auth { display: grid; gap: var(--space-4); width: 100%; max-width: 420px; margin-inline: auto; padding: var(--space-6) var(--space-5); border-radius: var(--radius-xl, 28px); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-md, 0 8px 32px rgb(0 0 0 / .08)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.auth-logo { width: 56px; height: 56px; border-radius: 16px; }
+.auth h1, .auth p { margin: 0; }
+.auth .segmented { width: 100%; } .auth .segmented button { flex: 1; }
+.auth .stack, .auth .btn.block { width: 100%; }
+.input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px var(--surface) inset; -webkit-text-fill-color: var(--text); }

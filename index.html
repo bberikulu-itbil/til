@@ -95,14 +95,21 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 
   <!-- Login: same account as Life Hub -->
   <main id="login" class="view gutter" hidden>
-    <h1 class="t-xl">Тіл</h1>
-    <p class="muted">Life Hub аккаунтыңмен кір.</p>
-    <form id="login-form" class="stack" style="max-width:380px">
-      <div class="field"><label for="email">Email</label><input id="email" class="input" type="email" autocomplete="email" required></div>
-      <div class="field"><label for="password">Құпиясөз</label><input id="password" class="input" type="password" autocomplete="current-password" required></div>
-      <button id="login-btn" class="btn" type="submit">Кіру</button>
-      <p id="login-msg" class="t-sm muted" role="status"></p>
-    </form>
+    <section class="auth">
+      <img class="auth-logo" src="brand/logos/sozdik.svg" alt="">
+      <h1 class="t-xl">Тіл</h1>
+      <p class="muted">Ағылшын, IELTS және ҰБТ. Life Hub аккаунтымен ортақ.</p>
+      <div id="auth-tabs" class="segmented" role="tablist" aria-label="Кіру не тіркелу">
+        <button id="tab-signin" role="tab" type="button" aria-selected="true">Кіру</button>
+        <button id="tab-signup" role="tab" type="button" aria-selected="false">Тіркелу</button>
+      </div>
+      <form id="login-form" class="stack">
+        <div class="field"><label for="email">Email</label><input id="email" class="input" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required></div>
+        <div class="field"><label for="password">Құпиясөз</label><input id="password" class="input" type="password" autocomplete="current-password" minlength="8" required><small id="pw-hint" class="t-sm muted" hidden>Кемінде 8 таңба.</small></div>
+        <button id="login-btn" class="btn lg block" type="submit">Кіру</button>
+        <p id="login-msg" class="t-sm muted" role="status"></p>
+      </form>
+    </section>
   </main>
 
   <!-- S04 Today -->
@@ -453,6 +460,7 @@ function show(next) {
   view = next;
   for (const v of ["login", "today", "session", "words", "practice", "chats", "chat", "profile"]) $(v).hidden = v !== next;
   if (next !== "login") updatePick();
+  document.querySelector(".top").classList.toggle("signed-out", next === "login");
   $("tabbar").hidden = next === "login" || next === "session" || next === "chat";
   for (const b of $("tabbar").children) b.setAttribute("aria-current", b.dataset.view === next ? "page" : "false");
   if (next === "today" && profile) renderToday(); // before the first load the skeleton stays
@@ -1084,12 +1092,22 @@ $("goal-form").onsubmit = async (e) => {
 $("logout").onclick = () => sb.auth.signOut();
 
 /* ---------- auth ---------- */
+let signup = false;
+function authMode(on) {
+  signup = on;
+  $("tab-signin").setAttribute("aria-selected", String(!on)); $("tab-signup").setAttribute("aria-selected", String(on));
+  $("login-btn").textContent = on ? "Тіркелу" : "Кіру"; $("pw-hint").hidden = !on; $("login-msg").textContent = "";
+  $("password").autocomplete = on ? "new-password" : "current-password";
+}
+$("tab-signin").onclick = () => authMode(false); $("tab-signup").onclick = () => authMode(true);
+const AUTH_ERRORS = { "Invalid login credentials": "Email немесе құпиясөз қате.", "User already registered": "Бұл email тіркелген. «Кіру» қойындысын ашыңыз.", "Email not confirmed": "Email әлі расталмаған: поштаңдағы сілтемені бас." };
 $("login-form").onsubmit = async (e) => {
   e.preventDefault();
   $("login-btn").disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+  const cred = { email: $("email").value.trim(), password: $("password").value };
+  const { data, error } = signup ? await sb.auth.signUp(cred) : await sb.auth.signInWithPassword(cred);
   $("login-btn").disabled = false;
-  $("login-msg").textContent = error ? (error.message === "Invalid login credentials" ? "Email немесе құпиясөз қате." : error.message) : "";
+  $("login-msg").textContent = error ? AUTH_ERRORS[error.message] || error.message : signup && !data?.session ? "Поштаңа растау сілтемесі жіберілді. Бас, сосын «Кіру» қойындысынан кір." : "";
 };
 sb.auth.onAuthStateChange((event, session_) => {
   if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return; // keep a card session where it is
