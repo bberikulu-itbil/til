@@ -24,3 +24,8 @@ test("xpOf: answer 2, knew +3, new word learned +5", () => {
   assert.equal(xpOf({ reviews: 3, knew: 1, new_words: 0 }), 9);
   assert.equal(xpOf(undefined), 0);
 });
+
+test("xpOf: missing fields count as 0, not NaN", async () => {
+  const { xpOf } = await import("../stats.js");
+  assert.equal(xpOf({ reviews: 2, new_words: 1 }), 9);
+});
