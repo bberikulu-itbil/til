@@ -50,3 +50,11 @@ test("spellingOk ignores case and extra spaces only", () => {
   assert.ok(!spellingOk("lok forward", "look forward"));
   assert.ok(!spellingOk("", "a"));
 });
+
+test("wordCount counts English words only; every essay topic is a real question", async () => {
+  const { wordCount, ESSAY_TOPICS } = await import("../practice.js");
+  assert.equal(wordCount("Don't stop — well-known 42 қол"), 3);
+  assert.equal(wordCount(""), 0);
+  assert.equal(wordCount(null), 0);
+  assert.ok(ESSAY_TOPICS.length >= 5 && ESSAY_TOPICS.every((t) => t.length > 40));
+});

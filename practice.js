@@ -38,3 +38,13 @@ export const sentenceOk = (built, sentence) => built.join(" ") === sentence;
 
 // Audio Spelling: letters and case do not have to match exactly in spacing, only in the letters.
 export const spellingOk = (typed, word) => typed.trim().replace(/\s+/g, " ").toLowerCase() === word.trim().replace(/\s+/g, " ").toLowerCase();
+
+// IELTS Writing Task 2: topics and the word counter (the minimum for a real answer is 250).
+export const ESSAY_TOPICS = [
+  "Some people believe that working from home is better than working in an office. Discuss both views and give your opinion.",
+  "Some people think that children should start learning a foreign language at primary school. To what extent do you agree or disagree?",
+  "Many people use social media every day. Do the advantages of this outweigh the disadvantages?",
+  "Some people say that it is better to live in a big city, while others prefer a small town. Discuss both views and give your opinion.",
+  "Some people believe that university education should be free for everyone. To what extent do you agree or disagree?",
+];
+export const wordCount = (text) => (String(text ?? "").match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g) || []).length;

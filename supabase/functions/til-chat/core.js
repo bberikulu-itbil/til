@@ -13,6 +13,7 @@ const ACTIONS = {
   translate: "Translate the text into natural, fluent Kazakh (not word for word). Output only the translation.",
   rule: "Analyse the English text for a learner. In Kazakh, list at most 5 short lines, one per grammar item: the tense or structure used, and why it is used there. No introduction.",
   explain: "Explain the English word or phrase in simple Kazakh: meaning, how it is used, and one short English example with its Kazakh translation.",
+  essay: 'You are a careful IELTS Writing Task 2 examiner. The learner is a Kazakh speaker. Estimate bands (0-9, steps of 0.5) for Task Response (tr), Coherence and Cohesion (cc), Lexical Resource (lr) and Grammatical Range and Accuracy (gra), plus the overall band. Be realistic, not generous. Then write ONE tip in simple Kazakh (max 40 words): quote the most important mistake in English, give the fix, and say what to improve next. Output ONLY JSON: {"band":6.5,"tr":6.5,"cc":6,"lr":7,"gra":6.5,"tip":"..."}',
   hint: 'Suggest 3 different short replies (4-15 words) that the learner could say next in this English conversation: one simple, one longer, one that asks a question back. Output ONLY a JSON array of 3 strings, nothing else.',
 };
 export const isAction = (a) => Object.hasOwn(ACTIONS, a);
@@ -28,14 +29,15 @@ export function cleanHistory(messages) {
 }
 
 // Messages for one model call; null when the request is not valid.
-export function buildMessages({ persona, action, text, messages }) {
+export function buildMessages({ persona, action, text, messages, topic }) {
   if (!action || action === "chat") {
     const p = PERSONAS[persona], history = cleanHistory(messages);
     return p && history.at(-1)?.role === "user" ? [{ role: "system", content: p.system }, ...history] : null;
   }
   if (!isAction(action)) return null;
-  const t = cleanText(text);
+  const t = cleanText(text, action === "essay" ? 3000 : 1500);
   if (!t) return null;
+  if (action === "essay") return topic ? [{ role: "system", content: ACTIONS.essay }, { role: "user", content: `Topic: ${cleanText(topic, 300)}\n\nEssay:\n${t}` }] : null;
   const context = action === "hint" ? cleanHistory(messages).slice(-6).map((m) => `${m.role === "user" ? "Learner" : "Partner"}: ${m.content}`).join("\n") : "";
   return [{ role: "system", content: ACTIONS[action] }, { role: "user", content: context ? `Conversation so far:\n${context}\n\nPartner's last message:\n${t}` : t }];
 }
@@ -48,6 +50,22 @@ export function parseHints(text) {
     const list = JSON.parse(m[0]);
     const out = Array.isArray(list) ? list.filter((s) => typeof s === "string" && s.trim() && s.length <= 160).map((s) => s.trim()).slice(0, 3) : [];
     return out.length >= 2 ? out : null;
+  } catch { return null; }
+}
+
+// Model's JSON -> { band, tr, cc, lr, gra, tip }; every score 0-9 rounded to .5, else null.
+export function parseEssay(text) {
+  const m = String(text ?? "").match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const o = JSON.parse(m[0]), out = {};
+    for (const k of ["band", "tr", "cc", "lr", "gra"]) {
+      const n = Number(o[k]);
+      if (!Number.isFinite(n) || n < 0 || n > 9) return null;
+      out[k] = Math.round(n * 2) / 2;
+    }
+    const tip = typeof o.tip === "string" ? o.tip.trim().slice(0, 400) : "";
+    return tip ? { ...out, tip } : null;
   } catch { return null; }
 }
 

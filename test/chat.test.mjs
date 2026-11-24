@@ -65,3 +65,17 @@ test("parseSlash maps commands to actions and leaves ordinary text alone", () =>
   assert.equal(parseSlash("hello /translate"), null);
   assert.equal(parseSlash("1/2 cup"), null);
 });
+
+test("essay: needs topic and text, long text allowed; parseEssay validates scores and rounds to .5", async () => {
+  const { parseEssay } = await import("../supabase/functions/til-chat/core.js");
+  assert.equal(buildMessages({ action: "essay", text: "My essay" }), null);
+  assert.equal(buildMessages({ action: "essay", topic: "T", text: " " }), null);
+  const m = buildMessages({ action: "essay", topic: "Work", text: "x".repeat(2500) });
+  assert.deepEqual(m.map((x) => x.role), ["system", "user"]);
+  assert.match(m[1].content, /^Topic: Work\n\nEssay:\nx{2500}$/);
+  const ok = '```json\n{"band":6.7,"tr":6.5,"cc":6,"lr":7,"gra":6.2,"tip":" Қате. "}\n```';
+  assert.deepEqual(parseEssay(ok), { band: 6.5, tr: 6.5, cc: 6, lr: 7, gra: 6, tip: "Қате." });
+  assert.equal(parseEssay('{"band":10,"tr":6,"cc":6,"lr":6,"gra":6,"tip":"x"}'), null);
+  assert.equal(parseEssay('{"band":6,"tr":6,"cc":6,"lr":6,"gra":6}'), null);
+  assert.equal(parseEssay("no json"), null);
+});

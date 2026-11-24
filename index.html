@@ -229,6 +229,10 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
         <button class="list-row" type="button" data-game="sentence"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-pen"/></svg></span><span>Сөйлем құрастыру<small>Сөздерден дұрыс сөйлем жина</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
         <button class="list-row" type="button" data-game="spelling"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-speaker"/></svg></span><span>Есту арқылы жазу<small>Тыңдап, сөзді қатесіз жаз</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
       </div>
+      <h2 class="t-lg">Емтиханға дайындық</h2>
+      <div class="list">
+        <button class="list-row" type="button" id="exam-writing"><span class="icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-pen"/></svg></span><span>IELTS Writing Task 2<small>Эссе жаз, ЖИ баға мен кеңес береді</small></span><svg class="chev" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      </div>
       <p id="practice-note" class="t-sm muted">Ойындар сөздігіңдегі сөздермен жүреді. Нәтиже қораптарға әсер етпейді: қайталау Басты беттегі карточкалармен ғана.</p>
     </div>
     <section id="game" class="stack" hidden>
@@ -287,7 +291,7 @@ html, body { height: 100%; overscroll-behavior: none; } /* бет өзі иіл�
 <script type="module">
 import { review, queue, INTERVALS } from "./srs.js";
 import { parseSlash } from "./chat.js";
-import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk } from "./practice.js";
+import { matchSet, quizQuestion, sentenceRound, sentenceOk, spellingOk, ESSAY_TOPICS, wordCount } from "./practice.js";
 import { BOXES, boxOf, boxCounts, levelsOf, filterWords, toCsv, pickWord, levelMap, wordOfDay } from "./dict.js";
 import { attachSwipe, fly } from "./swipe.js";
 import { dayKey, addDays, streaks, weekOf, xpOf } from "./stats.js";
@@ -734,6 +738,53 @@ function gameDone(title, text) {
 function needWords(n, what) { toast(`${what}: сөздікте кемінде ${n} сөз керек.`, true); }
 $("game-back").onclick = endGame;
 for (const b of document.querySelectorAll("[data-game]")) b.onclick = () => ({ match: playMatch, quiz: playQuiz, sentence: playSentence, spelling: playSpelling })[b.dataset.game]();
+
+/* IELTS Writing Task 2: the essay goes to the til-chat function; the band is an AI estimate, not an official score. Results are not saved. */
+$("exam-writing").onclick = () => playEssay();
+const CRITERIA = [["tr", "Task Response [тапсырмаға жауап]"], ["cc", "Coherence [байланыс]"], ["lr", "Lexical Resource [сөз қоры]"], ["gra", "Grammar [грамматика]"]];
+function playEssay(topicNo = Math.floor(Math.random() * ESSAY_TOPICS.length), draft = "") {
+  const body = openGame("IELTS Writing Task 2"), topic = ESSAY_TOPICS[topicNo];
+  game = { kind: "essay" };
+  const card = el("div", "card stack"), ta = el("textarea", "input"), count = el("p", "t-sm muted", ""), go = el("button", "btn", "Бағалау"), next = el("button", "btn secondary", "Басқа тақырып");
+  card.append(el("b", "", "Тақырып"), Object.assign(el("p", "", topic), { lang: "en" }));
+  ta.lang = "en"; ta.rows = 12; ta.value = draft; ta.setAttribute("aria-label", "Эссе (ағылшынша)"); ta.placeholder = "Write your essay here…";
+  const upd = () => { count.textContent = `${wordCount(ta.value)} сөз · кемінде 250 керек`; };
+  ta.oninput = upd; upd();
+  go.type = next.type = "button";
+  next.onclick = () => playEssay((topicNo + 1) % ESSAY_TOPICS.length, ta.value);
+  go.onclick = async () => {
+    const n = wordCount(ta.value);
+    if (n < 50) return toast("Бағалау үшін кемінде 50 сөз жаз.", true);
+    go.disabled = true; go.textContent = "Бағаланып жатыр…";
+    try {
+      const { essay } = await callEssay(topic, ta.value);
+      showEssay(essay, n, () => playEssay(topicNo, ta.value));
+    } catch (e) { toast(e.message, true); go.disabled = false; go.textContent = "Бағалау"; }
+  };
+  const row = el("div", "row"); row.append(go, next);
+  body.replaceChildren(card, ta, count, row);
+}
+async function callEssay(topic, text) {
+  let models = [];
+  try { models = JSON.parse(localStorage.getItem("hub.models")) || []; } catch { /* storage off */ }
+  const res = await sb.functions.invoke("til-chat", { body: { action: "essay", topic, text, models } });
+  if (res.error) { let msg = res.error.message; try { msg = (await res.error.context.json()).error; } catch { /* keep it */ } throw new Error(msg); }
+  if (!res.data?.essay) throw new Error(res.data?.error || "Баға келмеді, қайта көр.");
+  return res.data;
+}
+function showEssay(r, n, again) {
+  const card = el("div", "card stack"), head = el("div", "row"), big = el("b", "t-xl", r.band.toFixed(1)), crit = el("div", "criteria");
+  head.append(big, el("span", "muted", "болжам band"));
+  for (const [k, label] of CRITERIA) {
+    const c = el("div", "criterion"), bar = el("div", "bar"), fill = el("i"); fill.style.width = Math.round((r[k] / 9) * 100) + "%";
+    bar.append(fill); c.append(el("span", "", label), el("b", "", r[k].toFixed(1)), bar); crit.append(c);
+  }
+  card.append(head, crit, el("p", "", "Кеңес. " + r.tip), el("p", "t-sm muted", `${n} сөз. Бұл ЖИ болжамы, ресми емтихан бағасы емес.`));
+  const redo = el("button", "btn", "Қайта жазу"), menu = el("button", "btn secondary", "Жаттығуға"); redo.type = menu.type = "button";
+  redo.onclick = again; menu.onclick = endGame;
+  const row = el("div", "row"); row.append(redo, menu);
+  $("game-body").replaceChildren(card, row);
+}
 
 function playMatch() {
   const set = matchSet(words, 5);
